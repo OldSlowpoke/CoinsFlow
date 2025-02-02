@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.lifeflow.coinsflow"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.lifeflow.coinsflow"
