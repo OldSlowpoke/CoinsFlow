@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.lifeflow.coinsflow.ui.theme.CoinsFlowTheme
+import com.lifeflow.coinsflow.uiView.ExpensesScreen
 import com.lifeflow.coinsflow.uiView.HomeScreen
 
 class MainActivity : ComponentActivity() {
@@ -19,7 +20,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CoinsFlowTheme {
-                HomeScreen()
+                ExpensesScreen()
             }
         }
     }
@@ -30,6 +31,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GreetingPreview() {
     CoinsFlowTheme {
-        HomeScreen()
+        ExpensesScreen()
     }
 }
