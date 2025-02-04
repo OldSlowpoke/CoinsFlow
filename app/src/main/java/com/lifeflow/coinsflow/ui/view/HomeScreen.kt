@@ -18,7 +18,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.lifeflow.coinsflow.model.Accounts
+import com.lifeflow.coinsflow.model.Account
 import com.lifeflow.coinsflow.model.Expenses
 import com.lifeflow.coinsflow.model.Incomes
 import androidx.compose.material3.Text
@@ -48,7 +48,7 @@ import androidx.compose.ui.unit.sp
 fun HomeScreen() {
     // Инициализация счетов
     val accounts = listOf(
-        Accounts(
+        Account(
             accountName = "Счет 1",
             initialAmount = 1000.0,
         )

@@ -11,10 +11,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.lifeflow.coinsflow.ui.theme.CoinsFlowTheme
+import com.lifeflow.coinsflow.ui.view.CheckScreen
 import com.lifeflow.coinsflow.ui.view.ExpensesScreen
 import com.lifeflow.coinsflow.ui.view.HomeScreen
 import com.lifeflow.coinsflow.ui.view.IncomesScreen
 import com.lifeflow.coinsflow.ui.view.ProfileScreen
+import com.lifeflow.coinsflow.ui.view.StatisticsScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,7 +27,9 @@ class MainActivity : ComponentActivity() {
                 //IncomesScreen()
                 //HomeScreen()
                 //ExpensesScreen()
-                ProfileScreen()
+                //ProfileScreen()
+                //StatisticsScreen()
+                CheckScreen()
             }
         }
     }

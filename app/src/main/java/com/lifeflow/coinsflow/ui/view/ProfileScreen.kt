@@ -31,32 +31,32 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lifeflow.coinsflow.model.Accounts
-import com.lifeflow.coinsflow.model.Assets
+import com.lifeflow.coinsflow.model.Account
+import com.lifeflow.coinsflow.model.Asset
 import com.lifeflow.coinsflow.ui.theme.GrayLight
 
 @Composable
 fun ProfileScreen() {
     val apartmentAccounts = listOf(
-        Accounts(accountName = "Счет 1", initialAmount = 1000.0),
-        Accounts(accountName = "Счет 2", initialAmount = 2000.0)
+        Account(accountName = "Счет 1", initialAmount = 1000.0),
+        Account(accountName = "Счет 2", initialAmount = 2000.0)
     )
 
     val bankAccounts = listOf(
-        Accounts(accountName = "Счет 1", initialAmount = 3000.0),
-        Accounts(accountName = "Счет 2", initialAmount = 4000.0),
-        Accounts(accountName = "Счет 3", initialAmount = 5000.0)
+        Account(accountName = "Счет 1", initialAmount = 3000.0),
+        Account(accountName = "Счет 2", initialAmount = 4000.0),
+        Account(accountName = "Счет 3", initialAmount = 5000.0)
     )
 
     val carAccounts = listOf(
-        Accounts(accountName = "Счет 1", initialAmount = 6000.0)
+        Account(accountName = "Счет 1", initialAmount = 6000.0)
     )
 
     // Создаем список активов
     val assets = listOf(
-        Assets(assetType = "Квартира", accounts = apartmentAccounts),
-        Assets(assetType = "Банк", accounts = bankAccounts),
-        Assets(assetType = "Автомобиль", accounts = carAccounts)
+        Asset(assetType = "Квартира", accounts = apartmentAccounts),
+        Asset(assetType = "Банк", accounts = bankAccounts),
+        Asset(assetType = "Автомобиль", accounts = carAccounts)
     )
     Column(
         modifier = Modifier.fillMaxSize()
@@ -145,7 +145,7 @@ fun ProfileBar() {
 
 
 @Composable
-fun AssetsList(assets: List<Assets>) {
+fun AssetsList(assets: List<Asset>) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp)
@@ -157,7 +157,7 @@ fun AssetsList(assets: List<Assets>) {
 }
 
 @Composable
-fun AssetItem(asset: Assets) {
+fun AssetItem(asset: Asset) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -175,7 +175,7 @@ fun AssetItem(asset: Assets) {
 }
 
 @Composable
-fun AccountItem(account: Accounts) {
+fun AccountItem(account: Account) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
