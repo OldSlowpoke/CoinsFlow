@@ -1,4 +1,4 @@
-package com.lifeflow.coinsflow.uiView
+package com.lifeflow.coinsflow.ui.view
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
@@ -32,22 +32,22 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExpensesScreen() {
-    var date = remember { mutableStateOf("Дата") }
-    var activity = remember { mutableStateOf("Актив") }
-    var account = remember { mutableStateOf("Счет") }
-    var amount = remember { mutableStateOf("Сумма") }
+fun IncomesScreen() {
+    val date = remember { mutableStateOf("Дата") }
+    val activity = remember { mutableStateOf("Актив") }
+    val account = remember { mutableStateOf("Счет") }
+    val amount = remember { mutableStateOf("Сумма") }
     var isCheckOpen = remember { mutableStateOf(false) }
-    var isActivityDropdownOpen = remember { mutableStateOf(false) }
-    var isAccountDropdownOpen = remember { mutableStateOf(false) }
+    val isActivityDropdownOpen = remember { mutableStateOf(false) }
+    val isAccountDropdownOpen = remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Расход", textAlign = TextAlign.Center) },
+                title = { Text("Доход", textAlign = TextAlign.Center) },
                 navigationIcon = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -136,20 +136,6 @@ fun ExpensesScreen() {
                             onClick = { account.value = "Редактировать" }
                         )
                     }
-                }
-                Divider()
-
-                // Поле Чек
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { isCheckOpen.value = true }
-                        .padding(vertical = 8.dp)
-                ) {
-                    Text(
-                        text = "Чек",
-                        modifier = Modifier.padding(8.dp)
-                    )
                 }
                 Divider()
 

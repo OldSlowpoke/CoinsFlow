@@ -1,4 +1,4 @@
-package com.lifeflow.coinsflow.uiView
+package com.lifeflow.coinsflow.ui.view
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -39,6 +40,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 
@@ -47,11 +49,8 @@ fun HomeScreen() {
     // Инициализация счетов
     val accounts = listOf(
         Accounts(
-            accountId = 1,
-            assetId = 101,
-            accountsName = "Счет 1",
+            accountName = "Счет 1",
             initialAmount = 1000.0,
-            userid = 1
         )
     )
 
@@ -319,8 +318,8 @@ fun HomeScreen() {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        TopBar()
-        Expence(expenses)
+        MainBar()
+        Transactions(expenses)
         //Incom()
     }
 }
@@ -337,6 +336,7 @@ fun TransactionItem(transaction: Expenses, onDelete: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 5.dp, end = 5.dp, top = 1.dp, bottom = 5.dp)
+            .clip(RoundedCornerShape(20.dp))
             .background(GrayLight)
     ) {
         Column {
@@ -388,7 +388,7 @@ fun TransactionItem(transaction: Expenses, onDelete: () -> Unit) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Expence(expenses: List<Expenses>) {
+fun Transactions(expenses: List<Expenses>) {
     val groups = expenses.groupBy { it.date }
     LazyColumn {
         groups.forEach { (date, incomes) ->
@@ -398,7 +398,7 @@ fun Expence(expenses: List<Expenses>) {
                     color = Color.White,
                     modifier = Modifier
                         .padding(top = 10.dp, start = 5.dp, end = 5.dp, bottom = 3.dp)
-                        .background(GrayDark)
+                        .background(GrayDark, RoundedCornerShape(20.dp))
                         .fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
@@ -411,13 +411,14 @@ fun Expence(expenses: List<Expenses>) {
 }
 
 @Composable
-fun TopBar() {
+fun MainBar() {
     Card(
         modifier = Modifier
             .height(300.dp)
             .fillMaxWidth()
             .padding(horizontal = 5.dp, vertical = 5.dp),
-        colors = CardDefaults.cardColors(GrayLight)
+        colors = CardDefaults.cardColors(GrayLight),
+        shape = RoundedCornerShape(20.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxSize()
@@ -426,15 +427,25 @@ fun TopBar() {
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(10.dp)
+                    .clip(RoundedCornerShape(20.dp))
                     .background(GrayLight)
                     .weight(4f),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "100 000 Руб",
-                    fontSize = 50.sp,
-                    textAlign = TextAlign.Center
-                )
+                Column {
+                    Text(
+                        text = "Баланс (Руб):",
+                        fontSize = 15.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Text(
+                        text = "100 000",
+                        fontSize = 50.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
             Row(
                 modifier = Modifier
