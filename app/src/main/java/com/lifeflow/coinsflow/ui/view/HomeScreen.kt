@@ -1,5 +1,7 @@
 package com.lifeflow.coinsflow.ui.view
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,13 +41,15 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(db: FirebaseFirestore) {
     // Инициализация счетов
     val accounts = listOf(
         Account(
@@ -53,7 +57,6 @@ fun HomeScreen() {
             initialAmount = 1000.0,
         )
     )
-
 // Инициализация трат
     val expenses = listOf(
         Expenses(
@@ -184,8 +187,30 @@ fun HomeScreen() {
         )
     )
 
+    val expenses1 = Expenses(
+        expenseId = 1,
+        accountId = 1,
+        date = "2023-10-01",
+        type = "Продукты",
+        total = 150.0
+    )
+    val expenses2 = Expenses(
+        expenseId = 2,
+        accountId = 1,
+        date = "2023-10-01",
+        type = "Транспорт",
+        total = 50.0
+    )
+    val expenses3 = Expenses(
+        expenseId = 3,
+        accountId = 1,
+        date = "2023-10-03",
+        type = "Развлечения",
+        total = 200.0
+    )
 
-    val incomes = listOf(
+
+    /*val incomes = listOf(
         Incomes(
             incomeId = 1,
             accountId = 1,
@@ -312,14 +337,32 @@ fun HomeScreen() {
             date = "2023-10-18",
             total = 700.0
         )
-    )
+    )*/
 
+    db.collection("transaction").document("1")
+        .set(expenses1)
+        .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully written!") }
+        .addOnFailureListener { e -> Log.w("FireTAG", "Error writing document 1", e) }
+    db.collection("transaction").document("2")
+        .set(expenses2)
+        .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully written!") }
+        .addOnFailureListener { e -> Log.w("FireTAG", "Error writing document 2", e) }
+    db.collection("transaction").document("3")
+        .set(expenses3)
+        .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully written!") }
+        .addOnFailureListener { e -> Log.w("FireTAG", "Error writing document 3 ", e) }
+
+    var expenses4 by remember { mutableStateOf(emptyList<Expenses>()) }
+
+    db.collection("transaction").get().addOnSuccessListener { task ->
+        expenses4 = task.toObjects(Expenses::class.java)
+    }
 
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
         MainBar()
-        Transactions(expenses)
+        Transactions(expenses4)
         //Incom()
     }
 }

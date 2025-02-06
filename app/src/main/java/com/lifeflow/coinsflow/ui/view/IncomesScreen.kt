@@ -15,16 +15,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -33,13 +35,13 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IncomesScreen() {
-    val date = remember { mutableStateOf("Дата") }
-    val activity = remember { mutableStateOf("Актив") }
-    val account = remember { mutableStateOf("Счет") }
-    val amount = remember { mutableStateOf("Сумма") }
-    var isCheckOpen = remember { mutableStateOf(false) }
-    val isActivityDropdownOpen = remember { mutableStateOf(false) }
-    val isAccountDropdownOpen = remember { mutableStateOf(false) }
+    val date by remember { mutableStateOf("Дата") }
+    val activity by remember { mutableStateOf("Актив") }
+    var account by remember { mutableStateOf("Счет") }
+    var amount by remember { mutableStateOf("Сумма") }
+    var isCheckOpen by remember { mutableStateOf(false) }
+    var isActivityDropdownOpen by remember { mutableStateOf(false) }
+    var isAccountDropdownOpen by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -66,18 +68,15 @@ fun IncomesScreen() {
                         .clickable { /* Логика изменения даты */ }
                         .padding(vertical = 8.dp)
                 ) {
-                    Text(
-                        text = date.value,
-                        modifier = Modifier.padding(8.dp)
-                    )
+                    DatePickerDocked()
                 }
-                Divider()
+                HorizontalDivider()
 
                 // Поле Актив
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { isActivityDropdownOpen.value = true }
+                        .clickable { isActivityDropdownOpen = true }
                         .padding(vertical = 8.dp)
                 ) {
                     Row(
@@ -86,7 +85,7 @@ fun IncomesScreen() {
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = activity.value,
+                            text = activity,
                             modifier = Modifier.padding(8.dp)
                         )
                         Icon(
@@ -95,8 +94,8 @@ fun IncomesScreen() {
                         )
                     }
                     DropdownMenu(
-                        expanded = isActivityDropdownOpen.value,
-                        onDismissRequest = { isActivityDropdownOpen.value = false }
+                        expanded = isActivityDropdownOpen,
+                        onDismissRequest = { isActivityDropdownOpen = false }
                     ) {
                         DropdownMenuItem(
                             text = { Text("Редактировать") },
@@ -104,13 +103,13 @@ fun IncomesScreen() {
                         )
                     }
                 }
-                Divider()
+                HorizontalDivider()
 
                 // Поле Счет
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { isAccountDropdownOpen.value = true }
+                        .clickable { isAccountDropdownOpen = true }
                         .padding(vertical = 8.dp)
                 ) {
                     Row(
@@ -119,7 +118,7 @@ fun IncomesScreen() {
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = account.value,
+                            text = account,
                             modifier = Modifier.padding(8.dp)
                         )
                         Icon(
@@ -128,26 +127,26 @@ fun IncomesScreen() {
                         )
                     }
                     DropdownMenu(
-                        expanded = isAccountDropdownOpen.value,
-                        onDismissRequest = { isAccountDropdownOpen.value = false }
+                        expanded = isAccountDropdownOpen,
+                        onDismissRequest = { isAccountDropdownOpen = false }
                     ) {
                         DropdownMenuItem(
                             text = { Text("Редактировать") },
-                            onClick = { account.value = "Редактировать" }
+                            onClick = { account = "Редактировать" }
                         )
                     }
                 }
-                Divider()
+                HorizontalDivider()
 
                 // Поле Сумма
                 TextField(
-                    value = amount.value,
-                    onValueChange = { amount.value = it },
+                    value = amount,
+                    onValueChange = { amount = it },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)
                 )
-                Divider()
+                HorizontalDivider()
 
                 // Кнопка Сохранить
                 Button(
