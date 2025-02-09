@@ -46,10 +46,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
-fun HomeScreen(db: FirebaseFirestore) {
+fun HomeScreen(db: FirebaseFirestore, nv: NavHostController, onButtonClick: () -> Unit) {
     // Инициализация счетов
     val accounts = listOf(
         Account(
@@ -337,8 +338,7 @@ fun HomeScreen(db: FirebaseFirestore) {
             date = "2023-10-18",
             total = 700.0
         )
-    )*/
-
+    )
     db.collection("transaction").document("1")
         .set(expenses1)
         .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully written!") }
@@ -356,13 +356,13 @@ fun HomeScreen(db: FirebaseFirestore) {
 
     db.collection("transaction").get().addOnSuccessListener { task ->
         expenses4 = task.toObjects(Expenses::class.java)
-    }
+    }*/
 
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        MainBar()
-        Transactions(expenses4)
+        MainBar(nv, onButtonClick)
+        Transactions(expenses)
         //Incom()
     }
 }
@@ -454,7 +454,7 @@ fun Transactions(expenses: List<Expenses>) {
 }
 
 @Composable
-fun MainBar() {
+fun MainBar(nv: NavHostController,onButtonClick: () -> Unit) {
     Card(
         modifier = Modifier
             .height(300.dp)
@@ -516,7 +516,9 @@ fun MainBar() {
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(
-                    onClick = { },
+                    onClick = {
+                        onButtonClick()
+                    },
                     modifier = Modifier.weight(2f)
                 ) {
                     Icon(
