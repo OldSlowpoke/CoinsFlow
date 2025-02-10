@@ -51,14 +51,14 @@ import com.lifeflow.coinsflow.viewModel.FireViewModel
 fun HomeScreen(
     nv: NavHostController,
     mv: FireViewModel,
-    onButtonClick: () -> Unit
+    onButtonClick: () -> Unit,
 ) {
     val transactions by mv.transactions.collectAsState()
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
         MainBar(nv, onButtonClick)
-        Transactions(transactions)
+        Transactions(transactions, mv)
         //Incom()
     }
 }
@@ -69,7 +69,7 @@ fun Incom() {
 }
 
 @Composable
-fun TransactionItem(transaction: Transactions, onDelete: () -> Unit) {
+fun TransactionItem(transaction: Transactions, mv: FireViewModel) {
     var value by rememberSaveable { mutableStateOf(false) }
     Box(
         modifier = Modifier
@@ -117,7 +117,7 @@ fun TransactionItem(transaction: Transactions, onDelete: () -> Unit) {
                 DropdownMenuItem(
                     text = { Text("Удалить") },
                     onClick = {
-                        onDelete()
+                        mv.deleteTransactions(transaction)
                     }
                 )
             }
@@ -127,7 +127,7 @@ fun TransactionItem(transaction: Transactions, onDelete: () -> Unit) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Transactions(expens: List<Transactions>) {
+fun Transactions(expens: List<Transactions>, mv: FireViewModel) {
     val groups = expens.groupBy { it.date }
     LazyColumn {
         groups.forEach { (date, incomes) ->
@@ -143,7 +143,7 @@ fun Transactions(expens: List<Transactions>) {
                 )
             }
             items(incomes.size) { index ->
-                TransactionItem(transaction = incomes[index], onDelete = {})
+                TransactionItem(transaction = incomes[index], mv)
             }
         }
     }

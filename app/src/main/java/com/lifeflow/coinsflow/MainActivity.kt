@@ -73,12 +73,14 @@ fun MainScreen() {
                 HomeScreen(
                     navController,
                     vM,
-                    onButtonClick = { navController.navigate("expenses") }
+                    onButtonClick = {
+                        navController.navigate(NavRoutes.Expenses.route)
+                    }
                 )
             }
             composable(NavRoutes.Contacts.route) { StatisticsScreen() }
             composable(NavRoutes.About.route) { ProfileScreen() }
-            composable(NavRoutes.Expenses.route) { ExpensesScreen() }
+            composable(NavRoutes.Expenses.route) { ExpensesScreen(navController) }
         }
         BottomNavigationBar(navController = navController)
     }

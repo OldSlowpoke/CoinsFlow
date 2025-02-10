@@ -18,5 +18,9 @@ class FireViewModel @Inject constructor(private val fireRepository: FireReposito
     fun addExpenses(transactions: Transactions) = viewModelScope.launch {
         fireRepository.addTransactions(transactions)
     }
+
+    fun deleteTransactions(transactions: Transactions) = viewModelScope.launch {
+        fireRepository.deleteTransactions(transactions)
+    }
 }
 
