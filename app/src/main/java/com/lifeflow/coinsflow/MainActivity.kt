@@ -31,8 +31,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 import com.lifeflow.coinsflow.ui.theme.CoinsFlowTheme
 import com.lifeflow.coinsflow.ui.view.ExpensesScreen
 import com.lifeflow.coinsflow.ui.view.HomeScreen
@@ -64,7 +62,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
-    val db = Firebase.firestore
     val vM: FireViewModel = hiltViewModel()
     Column(Modifier.padding(8.dp)) {
         NavHost(
@@ -73,7 +70,7 @@ fun MainScreen() {
             modifier = Modifier.weight(1f)
         ) {
             composable(NavRoutes.Home.route) {
-                HomeScreen(db,
+                HomeScreen(
                     navController,
                     vM,
                     onButtonClick = { navController.navigate("expenses") }

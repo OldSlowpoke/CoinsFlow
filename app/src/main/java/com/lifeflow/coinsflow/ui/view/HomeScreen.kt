@@ -49,7 +49,6 @@ import com.lifeflow.coinsflow.viewModel.FireViewModel
 
 @Composable
 fun HomeScreen(
-    db: FirebaseFirestore,
     nv: NavHostController,
     mv: FireViewModel,
     onButtonClick: () -> Unit

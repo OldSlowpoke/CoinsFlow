@@ -1,5 +1,8 @@
 package com.lifeflow.coinsflow
+
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -12,7 +15,7 @@ object FirebaseModule {
 
     @Provides
     @Singleton
-    fun provideFirebaseFirestore(): FirebaseFirestore {
-        return FirebaseFirestore.getInstance()
+    fun provideFirebaseFireStore(): FirebaseFirestore {
+        return Firebase.firestore
     }
 }
