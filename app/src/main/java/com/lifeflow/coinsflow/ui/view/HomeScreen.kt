@@ -1,7 +1,5 @@
 package com.lifeflow.coinsflow.ui.view
 
-import android.content.ContentValues.TAG
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,8 +19,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.lifeflow.coinsflow.model.Account
-import com.lifeflow.coinsflow.model.Expenses
-import com.lifeflow.coinsflow.model.Incomes
+import com.lifeflow.coinsflow.model.Transactions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,328 +38,28 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.google.firebase.firestore.FirebaseFirestore
+import com.lifeflow.coinsflow.viewModel.FireViewModel
 
 @Composable
-fun HomeScreen(db: FirebaseFirestore, nv: NavHostController, onButtonClick: () -> Unit) {
-    // Инициализация счетов
-    val accounts = listOf(
-        Account(
-            accountName = "Счет 1",
-            initialAmount = 1000.0,
-        )
-    )
-// Инициализация трат
-    val expenses = listOf(
-        Expenses(
-            expenseId = 1,
-            accountId = 1,
-            date = "2023-10-01",
-            type = "Продукты",
-            total = 150.0
-        ),
-        Expenses(
-            expenseId = 2,
-            accountId = 1,
-            date = "2023-10-01",
-            type = "Транспорт",
-            total = 50.0
-        ),
-        Expenses(
-            expenseId = 3,
-            accountId = 1,
-            date = "2023-10-03",
-            type = "Развлечения",
-            total = 200.0
-        ),
-        Expenses(
-            expenseId = 4,
-            accountId = 1,
-            date = "2023-10-04",
-            type = "Образование",
-            total = 300.0
-        ),
-        Expenses(
-            expenseId = 5,
-            accountId = 1,
-            date = "2023-10-04",
-            type = "Здоровье",
-            total = 100.0
-        ),
-        Expenses(
-            expenseId = 6,
-            accountId = 1,
-            date = "2023-10-04",
-            type = "Коммунальные услуги",
-            total = 120.0
-        ),
-        Expenses(
-            expenseId = 7,
-            accountId = 1,
-            date = "2023-10-07",
-            type = "Интернет",
-            total = 50.0
-        ),
-        Expenses(
-            expenseId = 8,
-            accountId = 1,
-            date = "2023-10-08",
-            type = "Мобильная связь",
-            total = 30.0
-        ),
-        Expenses(
-            expenseId = 9,
-            accountId = 1,
-            date = "2023-10-08",
-            type = "Одежда",
-            total = 250.0
-        ),
-        Expenses(
-            expenseId = 10,
-            accountId = 1,
-            date = "2023-10-10",
-            type = "Рестораны",
-            total = 180.0
-        ),
-        Expenses(
-            expenseId = 11,
-            accountId = 1,
-            date = "2023-10-11",
-            type = "Путешествия",
-            total = 500.0
-        ),
-        Expenses(
-            expenseId = 12,
-            accountId = 1,
-            date = "2023-10-12",
-            type = "Подарки",
-            total = 80.0
-        ),
-        Expenses(
-            expenseId = 13,
-            accountId = 1,
-            date = "2023-10-13",
-            type = "Спорт",
-            total = 70.0
-        ),
-        Expenses(
-            expenseId = 14,
-            accountId = 1,
-            date = "2023-10-14",
-            type = "Книги",
-            total = 40.0
-        ),
-        Expenses(
-            expenseId = 15,
-            accountId = 1,
-            date = "2023-10-15",
-            type = "Подписки",
-            total = 20.0
-        ),
-        Expenses(
-            expenseId = 16,
-            accountId = 1,
-            date = "2023-10-16",
-            type = "Благотворительность",
-            total = 50.0
-        ),
-        Expenses(
-            expenseId = 17,
-            accountId = 1,
-            date = "2023-10-17",
-            type = "Ремонт",
-            total = 300.0
-        ),
-        Expenses(
-            expenseId = 18,
-            accountId = 1,
-            date = "2023-10-18",
-            type = "Мебель",
-            total = 400.0
-        )
-    )
-
-    val expenses1 = Expenses(
-        expenseId = 1,
-        accountId = 1,
-        date = "2023-10-01",
-        type = "Продукты",
-        total = 150.0
-    )
-    val expenses2 = Expenses(
-        expenseId = 2,
-        accountId = 1,
-        date = "2023-10-01",
-        type = "Транспорт",
-        total = 50.0
-    )
-    val expenses3 = Expenses(
-        expenseId = 3,
-        accountId = 1,
-        date = "2023-10-03",
-        type = "Развлечения",
-        total = 200.0
-    )
-
-
-    /*val incomes = listOf(
-        Incomes(
-            incomeId = 1,
-            accountId = 1,
-            type = "Зарплата",
-            date = "2023-10-01",
-            total = 5000.0
-        ),
-        Incomes(
-            incomeId = 2,
-            accountId = 1,
-            type = "Фриланс",
-            date = "2023-10-01",
-            total = 1500.0
-        ),
-        Incomes(
-            incomeId = 3,
-            accountId = 1,
-            type = "Дивиденды",
-            date = "2023-10-03",
-            total = 300.0
-        ),
-        Incomes(
-            incomeId = 4,
-            accountId = 1,
-            type = "Аренда",
-            date = "2023-10-04",
-            total = 800.0
-        ),
-        Incomes(
-            incomeId = 5,
-            accountId = 1,
-            type = "Продажа имущества",
-            date = "2023-10-04",
-            total = 2000.0
-        ),
-        Incomes(
-            incomeId = 6,
-            accountId = 1,
-            type = "Подарок",
-            date = "2023-10-04",
-            total = 500.0
-        ),
-        Incomes(
-            incomeId = 7,
-            accountId = 1,
-            type = "Премия",
-            date = "2023-10-07",
-            total = 1000.0
-        ),
-        Incomes(
-            incomeId = 8,
-            accountId = 1,
-            type = "Консультации",
-            date = "2023-10-08",
-            total = 700.0
-        ),
-        Incomes(
-            incomeId = 9,
-            accountId = 1,
-            type = "Инвестиции",
-            date = "2023-10-09",
-            total = 1200.0
-        ),
-        Incomes(
-            incomeId = 10,
-            accountId = 1,
-            type = "Роялти",
-            date = "2023-10-10",
-            total = 400.0
-        ),
-        Incomes(
-            incomeId = 11,
-            accountId = 1,
-            type = "Фриланс",
-            date = "2023-10-11",
-            total = 1500.0
-        ),
-        Incomes(
-            incomeId = 12,
-            accountId = 1,
-            type = "Зарплата",
-            date = "2023-10-12",
-            total = 5000.0
-        ),
-        Incomes(
-            incomeId = 13,
-            accountId = 1,
-            type = "Дивиденды",
-            date = "2023-10-13",
-            total = 300.0
-        ),
-        Incomes(
-            incomeId = 14,
-            accountId = 1,
-            type = "Аренда",
-            date = "2023-10-15",
-            total = 800.0
-        ),
-        Incomes(
-            incomeId = 15,
-            accountId = 1,
-            type = "Продажа имущества",
-            date = "2023-10-15",
-            total = 2000.0
-        ),
-        Incomes(
-            incomeId = 16,
-            accountId = 1,
-            type = "Подарок",
-            date = "2023-10-17",
-            total = 500.0
-        ),
-        Incomes(
-            incomeId = 17,
-            accountId = 1,
-            type = "Премия",
-            date = "2023-10-17",
-            total = 1000.0
-        ),
-        Incomes(
-            incomeId = 18,
-            accountId = 1,
-            type = "Консультации",
-            date = "2023-10-18",
-            total = 700.0
-        )
-    )
-    db.collection("transaction").document("1")
-        .set(expenses1)
-        .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully written!") }
-        .addOnFailureListener { e -> Log.w("FireTAG", "Error writing document 1", e) }
-    db.collection("transaction").document("2")
-        .set(expenses2)
-        .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully written!") }
-        .addOnFailureListener { e -> Log.w("FireTAG", "Error writing document 2", e) }
-    db.collection("transaction").document("3")
-        .set(expenses3)
-        .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully written!") }
-        .addOnFailureListener { e -> Log.w("FireTAG", "Error writing document 3 ", e) }
-
-    var expenses4 by remember { mutableStateOf(emptyList<Expenses>()) }
-
-    db.collection("transaction").get().addOnSuccessListener { task ->
-        expenses4 = task.toObjects(Expenses::class.java)
-    }*/
-
+fun HomeScreen(
+    db: FirebaseFirestore,
+    nv: NavHostController,
+    mv: FireViewModel,
+    onButtonClick: () -> Unit
+) {
+    val transactions by mv.transactions.collectAsState()
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
         MainBar(nv, onButtonClick)
-        Transactions(expenses)
+        Transactions(transactions)
         //Incom()
     }
 }
@@ -373,7 +70,7 @@ fun Incom() {
 }
 
 @Composable
-fun TransactionItem(transaction: Expenses, onDelete: () -> Unit) {
+fun TransactionItem(transaction: Transactions, onDelete: () -> Unit) {
     var value by rememberSaveable { mutableStateOf(false) }
     Box(
         modifier = Modifier
@@ -431,8 +128,8 @@ fun TransactionItem(transaction: Expenses, onDelete: () -> Unit) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Transactions(expenses: List<Expenses>) {
-    val groups = expenses.groupBy { it.date }
+fun Transactions(expens: List<Transactions>) {
+    val groups = expens.groupBy { it.date }
     LazyColumn {
         groups.forEach { (date, incomes) ->
             stickyHeader {
@@ -454,7 +151,7 @@ fun Transactions(expenses: List<Expenses>) {
 }
 
 @Composable
-fun MainBar(nv: NavHostController,onButtonClick: () -> Unit) {
+fun MainBar(nv: NavHostController, onButtonClick: () -> Unit) {
     Card(
         modifier = Modifier
             .height(300.dp)

@@ -1,9 +1,9 @@
 package com.lifeflow.coinsflow.model
 
-data class Expenses(
-    val expenseId: Int = 0,
-    val accountId: Int = 0,
+data class Transactions(
+    val id: String = "",
     val date: String = "",
     val type: String = "",
+    val category: String = "",
     val total: Double = 0.0
 )

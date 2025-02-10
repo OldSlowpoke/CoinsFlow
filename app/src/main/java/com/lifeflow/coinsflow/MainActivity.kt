@@ -24,29 +24,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.lifeflow.coinsflow.ui.theme.CoinsFlowTheme
-import com.lifeflow.coinsflow.ui.view.CheckScreen
 import com.lifeflow.coinsflow.ui.view.ExpensesScreen
 import com.lifeflow.coinsflow.ui.view.HomeScreen
 import com.lifeflow.coinsflow.ui.view.IncomesScreen
 import com.lifeflow.coinsflow.ui.view.ProfileScreen
 import com.lifeflow.coinsflow.ui.view.StatisticsScreen
+import com.lifeflow.coinsflow.viewModel.FireViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val db = Firebase.firestore
         enableEdgeToEdge()
         setContent {
             CoinsFlowTheme {
@@ -56,15 +55,17 @@ class MainActivity : ComponentActivity() {
                 //ProfileScreen()
                 //StatisticsScreen()
                 //CheckScreen()
-                Main(db)
+                MainScreen()
             }
         }
     }
 }
 
 @Composable
-fun Main(db: FirebaseFirestore) {
+fun MainScreen() {
     val navController = rememberNavController()
+    val db = Firebase.firestore
+    val vM: FireViewModel = hiltViewModel()
     Column(Modifier.padding(8.dp)) {
         NavHost(
             navController,
@@ -74,6 +75,7 @@ fun Main(db: FirebaseFirestore) {
             composable(NavRoutes.Home.route) {
                 HomeScreen(db,
                     navController,
+                    vM,
                     onButtonClick = { navController.navigate("expenses") }
                 )
             }
