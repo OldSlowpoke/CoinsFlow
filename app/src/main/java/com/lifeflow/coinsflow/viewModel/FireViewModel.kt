@@ -15,7 +15,7 @@ class FireViewModel @Inject constructor(private val fireRepository: FireReposito
     val transactions =
         fireRepository.getTransactions().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    fun addExpenses(transactions: Transactions) = viewModelScope.launch {
+    fun addTransactions(transactions: Transactions) = viewModelScope.launch {
         fireRepository.addTransactions(transactions)
     }
 

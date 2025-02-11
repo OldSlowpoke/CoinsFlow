@@ -68,7 +68,7 @@ fun IncomesScreen() {
                         .clickable { /* Логика изменения даты */ }
                         .padding(vertical = 8.dp)
                 ) {
-                    DatePickerDocked()
+
                 }
                 HorizontalDivider()
 

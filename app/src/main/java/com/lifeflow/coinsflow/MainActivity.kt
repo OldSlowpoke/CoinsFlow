@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
-    val vM: FireViewModel = hiltViewModel()
+    val vm: FireViewModel = hiltViewModel()
     Column(Modifier.padding(8.dp)) {
         NavHost(
             navController,
@@ -72,7 +72,7 @@ fun MainScreen() {
             composable(NavRoutes.Home.route) {
                 HomeScreen(
                     navController,
-                    vM,
+                    vm,
                     onButtonClick = {
                         navController.navigate(NavRoutes.Expenses.route)
                     }
@@ -80,7 +80,7 @@ fun MainScreen() {
             }
             composable(NavRoutes.Contacts.route) { StatisticsScreen() }
             composable(NavRoutes.About.route) { ProfileScreen() }
-            composable(NavRoutes.Expenses.route) { ExpensesScreen(navController) }
+            composable(NavRoutes.Expenses.route) { ExpensesScreen(navController, vm) }
         }
         BottomNavigationBar(navController = navController)
     }

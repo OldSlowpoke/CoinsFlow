@@ -112,12 +112,15 @@ fun TransactionItem(transaction: Transactions, mv: FireViewModel) {
             ) {
                 DropdownMenuItem(
                     text = { Text("Редактировать") },
-                    onClick = {}
+                    onClick = {
+                        value = false
+                    }
                 )
                 DropdownMenuItem(
                     text = { Text("Удалить") },
                     onClick = {
                         mv.deleteTransactions(transaction)
+                        value = false
                     }
                 )
             }
