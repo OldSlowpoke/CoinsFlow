@@ -24,12 +24,23 @@ class FireRepository @Inject constructor(private val firestore: FirebaseFirestor
         awaitClose { snapshotListener.remove() }
     }
 
-    suspend fun addTransactions(transactions: Transactions) {
-        firestore.collection("transaction").add(transactions).await()
+    suspend fun addTransactions(transactions: Transactions, id: String) {
+        firestore.collection("transaction").document(id).set(transactions).await()
     }
 
     suspend fun deleteTransactions(transactions: Transactions) {
         firestore.collection("transaction").document(transactions.id).delete().await()
     }
+
+    fun getLinkOnFirePath(path: String): String {
+        return firestore.collection(path).document().id
+    }
+
+    /*suspend fun updateTransactions(transactions: Transactions) {
+        firestore.collection("transaction")
+            .document(transactions.id)
+            .update(transactions)
+            .await()
+    }*/
 }
 

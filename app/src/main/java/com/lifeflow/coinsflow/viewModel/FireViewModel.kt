@@ -15,12 +15,14 @@ class FireViewModel @Inject constructor(private val fireRepository: FireReposito
     val transactions =
         fireRepository.getTransactions().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    fun addTransactions(transactions: Transactions) = viewModelScope.launch {
-        fireRepository.addTransactions(transactions)
+    fun addTransactions(transactions: Transactions, path: String) = viewModelScope.launch {
+        fireRepository.addTransactions(transactions,path)
     }
 
     fun deleteTransactions(transactions: Transactions) = viewModelScope.launch {
         fireRepository.deleteTransactions(transactions)
     }
+
+    fun getLinkOnFirePath(path: String) = fireRepository.getLinkOnFirePath(path)
 }
 

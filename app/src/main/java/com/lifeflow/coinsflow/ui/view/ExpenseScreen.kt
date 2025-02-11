@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.navigation.NavHostController
+import com.lifeflow.coinsflow.model.Account
 import com.lifeflow.coinsflow.model.Asset
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 import java.text.SimpleDateFormat
@@ -60,12 +61,8 @@ fun ExpensesScreen(nv: NavHostController, mv: FireViewModel) {
     var accounts by remember { mutableStateOf("Счет") }
     var total by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("Категория") }
+    var id: String
 
-    var isCheckOpen by remember { mutableStateOf(false) }
-    var isActivityDropdownOpen by remember { mutableStateOf(false) }
-    var isAccountDropdownOpen by remember { mutableStateOf(false) }
-
-    var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
     val selectedDate = datePickerState.selectedDateMillis?.let {
         convertMillisToDate(it)
@@ -105,142 +102,49 @@ fun ExpensesScreen(nv: NavHostController, mv: FireViewModel) {
                 HorizontalDivider()
 
                 // Поле Счет
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { isAccountDropdownOpen = true }
-                        .padding(vertical = 8.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = accounts,
-                            modifier = Modifier.padding(8.dp)
-                        )
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = null
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = isAccountDropdownOpen,
-                        onDismissRequest = { isAccountDropdownOpen = false },
-                        offset = DpOffset(x = 250.dp, y = 5.dp)
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Редактировать") },
-                            onClick = {
-                                accounts = "Редактировать"
-                                isAccountDropdownOpen = false
-                            }
-                        )
-                    }
-                }
+                AccountBox(
+                    accounts = accounts,
+                    onAccountChange = { newValue -> accounts = newValue }
+                )
+
                 HorizontalDivider()
 
                 // Поле Категория
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { isAccountDropdownOpen = true }
-                        .padding(vertical = 8.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = category,
-                            modifier = Modifier.padding(8.dp)
-                        )
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = null
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = isAccountDropdownOpen,
-                        onDismissRequest = { isAccountDropdownOpen = false },
-                        offset = DpOffset(x = 250.dp, y = 5.dp)
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Редактировать") },
-                            onClick = {
-                                category = "Редактировать"
-                                isAccountDropdownOpen = false
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Удалить") },
-                            onClick = {
-                                category = "Удалить"
-                                isAccountDropdownOpen = false
-                            }
-                        )
-                    }
-                }
+                CategoryBox(
+                    category = category,
+                    onCategoryChange = { newValue -> category = newValue }
+                )
                 HorizontalDivider()
 
                 // Поле Чек
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { isCheckOpen = true }
-                        .padding(vertical = 8.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Чек",
-                            modifier = Modifier.padding(8.dp)
-                        )
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = null
-                        )
-                    }
-                }
+                ChequeBox(
+                    onCheckRout = {}
+                )
+
                 HorizontalDivider()
 
                 // Поле Сумма
-                OutlinedTextField(
-                    value = total,
-                    onValueChange = { newValue ->
-                        if (
-                            newValue.isBlank() || newValue
-                                .matches(
-                                    "-\\d*(\\.\\d{0,2})?"
-                                        .toRegex()
-                                )
-                        ) {
-                            total = newValue
-                        }
-                    },
-                    label = { Text("Сумма") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
+                TotalBox(
+                    total = total,
+                    onTotalChange = { newValue -> total = newValue }
                 )
+
+
                 HorizontalDivider()
 
                 // Кнопка Сохранить
                 Button(
                     onClick = {
+                        id = mv.getLinkOnFirePath("transactions")
                         mv.addTransactions(
                             com.lifeflow.coinsflow.model.Transactions(
                                 date = selectedDate,
-                                total = total.toDouble(),
+                                total = 55.2,/*total.toDouble()*/
                                 type = "расход",
-
-                                )
+                                category = category,
+                                id = id,
+                                ),
+                            path = id
                         )
                     },
                     modifier = Modifier
@@ -252,6 +156,59 @@ fun ExpensesScreen(nv: NavHostController, mv: FireViewModel) {
             }
         }
     )
+}
+
+@Composable
+fun TotalBox(
+    total: String,
+    onTotalChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = total,
+        onValueChange = { newValue ->
+            if (
+                newValue.isBlank() || newValue
+                    .matches(
+                        "-\\d*(\\.\\d{0,2})?"
+                            .toRegex()
+                    )
+            ) {
+                onTotalChange(newValue)
+            }
+        },
+        label = { Text("Сумма") },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    )
+}
+
+@Composable
+fun ChequeBox(
+    onCheckRout: (String) -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {}
+            .padding(vertical = 8.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Чек",
+                modifier = Modifier.padding(8.dp)
+            )
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = null
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -309,7 +266,7 @@ fun DateBox(
 fun AssetBox(
     assets: String,
     onAssetChange: (String) -> Unit
-){
+) {
     var isActivityDropdownOpen by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
@@ -341,6 +298,97 @@ fun AssetBox(
                 onClick = {
                     onAssetChange("Редактировать")
                     isActivityDropdownOpen = false
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun AccountBox(
+    accounts: String,
+    onAccountChange: (String) -> Unit
+) {
+    var isAccountDropdownOpen by remember { mutableStateOf(false) }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { isAccountDropdownOpen = true }
+            .padding(vertical = 8.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = accounts,
+                modifier = Modifier.padding(8.dp)
+            )
+            Icon(
+                imageVector = Icons.Default.ArrowDropDown,
+                contentDescription = null
+            )
+        }
+        DropdownMenu(
+            expanded = isAccountDropdownOpen,
+            onDismissRequest = { isAccountDropdownOpen = false },
+            offset = DpOffset(x = 250.dp, y = 5.dp)
+        ) {
+            DropdownMenuItem(
+                text = { Text("Редактировать") },
+                onClick = {
+                    onAccountChange("Редактировать")
+                    isAccountDropdownOpen = false
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun CategoryBox(
+    category: String,
+    onCategoryChange: (String) -> Unit
+) {
+    var isCategoryDropdownOpen by remember { mutableStateOf(false) }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { isCategoryDropdownOpen = true }
+            .padding(vertical = 8.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = category,
+                modifier = Modifier.padding(8.dp)
+            )
+            Icon(
+                imageVector = Icons.Default.ArrowDropDown,
+                contentDescription = null
+            )
+        }
+        DropdownMenu(
+            expanded = isCategoryDropdownOpen,
+            onDismissRequest = { isCategoryDropdownOpen = false },
+            offset = DpOffset(x = 250.dp, y = 5.dp)
+        ) {
+            DropdownMenuItem(
+                text = { Text("Редактировать") },
+                onClick = {
+                    onCategoryChange("Редактировать")
+                    isCategoryDropdownOpen = false
+                }
+            )
+            DropdownMenuItem(
+                text = { Text("Удалить") },
+                onClick = {
+                    onCategoryChange("Удалить")
+                    isCategoryDropdownOpen = false
                 }
             )
         }
