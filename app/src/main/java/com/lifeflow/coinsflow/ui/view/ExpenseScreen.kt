@@ -32,10 +32,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +52,7 @@ import androidx.navigation.NavHostController
 import com.lifeflow.coinsflow.model.Account
 import com.lifeflow.coinsflow.model.Asset
 import com.lifeflow.coinsflow.viewModel.FireViewModel
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -68,6 +72,9 @@ fun ExpensesScreen(nv: NavHostController, mv: FireViewModel) {
         convertMillisToDate(it)
     } ?: ""
 
+    val snackBarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -79,6 +86,7 @@ fun ExpensesScreen(nv: NavHostController, mv: FireViewModel) {
                 }
             )
         },
+        snackbarHost = { SnackbarHost(snackBarHostState) },
         content = { innerPadding ->
             Column(
                 modifier = Modifier
@@ -139,13 +147,26 @@ fun ExpensesScreen(nv: NavHostController, mv: FireViewModel) {
                         mv.addTransactions(
                             com.lifeflow.coinsflow.model.Transactions(
                                 date = selectedDate,
-                                total = 55.2,/*total.toDouble()*/
+                                total = total.toDouble(),
                                 type = "расход",
                                 category = category,
                                 id = id,
-                                ),
+                            ),
                             path = id
-                        )
+                        ).isCompleted.let { answer ->
+                            when (answer) {
+                                true -> {
+                                    scope.launch {
+                                        snackBarHostState.showSnackbar("Транзакция удалена")
+                                    }
+                                }
+                                false -> {
+                                    scope.launch {
+                                        snackBarHostState.showSnackbar("Транзакция не удалена")
+                                    }
+                                }
+                            }
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()

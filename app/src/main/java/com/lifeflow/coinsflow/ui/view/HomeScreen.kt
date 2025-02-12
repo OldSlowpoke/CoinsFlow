@@ -38,7 +38,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
@@ -46,6 +51,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.google.firebase.firestore.FirebaseFirestore
 import com.lifeflow.coinsflow.viewModel.FireViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
@@ -54,102 +61,23 @@ fun HomeScreen(
     onButtonClick: () -> Unit,
 ) {
     val transactions by mv.transactions.collectAsState()
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        MainBar(nv, onButtonClick)
-        Transactions(transactions, mv)
-        //Incom()
-    }
-}
+    val snackBarHostState = remember { SnackbarHostState() }
+    val score = rememberCoroutineScope()
 
-@Composable
-fun Incom() {
-    TODO("Not yet implemented")
-}
-
-@Composable
-fun TransactionItem(transaction: Transactions, mv: FireViewModel) {
-    var value by rememberSaveable { mutableStateOf(false) }
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 5.dp, end = 5.dp, top = 1.dp, bottom = 5.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .background(GrayLight)
-    ) {
-        Column {
-            Row(
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackBarHostState) },
+        content = { innerPadding ->
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { }
-                    .padding(15.dp)
+                    .fillMaxSize()
+                    .padding(innerPadding)
             ) {
-                Text(
-                    text = transaction.type,
-                    modifier = Modifier.weight(4f),
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = transaction.total.toString(),
-                    modifier = Modifier.weight(2f)
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                IconButton(
-                    onClick = { value = true },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        Icons.Filled.Edit,
-                        contentDescription = "Edit"
-                    )
-                }
-            }
-            DropdownMenu(
-                expanded = value,
-                onDismissRequest = { value = false },
-                offset = DpOffset(x = 270.dp, y = 5.dp)
-            ) {
-                DropdownMenuItem(
-                    text = { Text("Редактировать") },
-                    onClick = {
-                        value = false
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("Удалить") },
-                    onClick = {
-                        mv.deleteTransactions(transaction)
-                        value = false
-                    }
-                )
-            }
-        }
-    }
-}
 
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun Transactions(expens: List<Transactions>, mv: FireViewModel) {
-    val groups = expens.groupBy { it.date }
-    LazyColumn {
-        groups.forEach { (date, incomes) ->
-            stickyHeader {
-                Text(
-                    text = date,
-                    color = Color.White,
-                    modifier = Modifier
-                        .padding(top = 10.dp, start = 5.dp, end = 5.dp, bottom = 3.dp)
-                        .background(GrayDark, RoundedCornerShape(20.dp))
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
-            }
-            items(incomes.size) { index ->
-                TransactionItem(transaction = incomes[index], mv)
+                MainBar(nv, onButtonClick)
+                Transactions(transactions, mv, score, snackBarHostState)
             }
         }
-    }
+    )
 }
 
 @Composable
@@ -225,6 +153,113 @@ fun MainBar(nv: NavHostController, onButtonClick: () -> Unit) {
                         contentDescription = "Edit"
                     )
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun Transactions(
+    expens: List<Transactions>,
+    mv: FireViewModel,
+    scope: CoroutineScope,
+    snackBarHostState: SnackbarHostState
+) {
+    val groups = expens.groupBy { it.date }
+    LazyColumn {
+        groups.forEach { (date, incomes) ->
+            stickyHeader {
+                Text(
+                    text = date,
+                    color = Color.White,
+                    modifier = Modifier
+                        .padding(top = 10.dp, start = 5.dp, end = 5.dp, bottom = 3.dp)
+                        .background(GrayDark, RoundedCornerShape(20.dp))
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
+            items(incomes.size) { index ->
+                TransactionItem(transaction = incomes[index], mv, scope, snackBarHostState)
+            }
+        }
+    }
+}
+
+@Composable
+fun TransactionItem(
+    transaction: Transactions,
+    mv: FireViewModel,
+    scope: CoroutineScope,
+    snackBarHostState: SnackbarHostState
+) {
+    var value by rememberSaveable { mutableStateOf(false) }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 5.dp, end = 5.dp, top = 1.dp, bottom = 5.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(GrayLight)
+    ) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { }
+                    .padding(15.dp)
+            ) {
+                Text(
+                    text = transaction.type,
+                    modifier = Modifier.weight(4f),
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = transaction.total.toString(),
+                    modifier = Modifier.weight(2f)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                IconButton(
+                    onClick = { value = true },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        Icons.Filled.Edit,
+                        contentDescription = "Edit"
+                    )
+                }
+            }
+            DropdownMenu(
+                expanded = value,
+                onDismissRequest = { value = false },
+                offset = DpOffset(x = 270.dp, y = 5.dp)
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Редактировать") },
+                    onClick = {
+                        value = false
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Удалить") },
+                    onClick = {
+                        mv.deleteTransactions(transaction).isCompleted.let { answer ->
+                            when (answer) {
+                                true -> {
+                                    scope.launch {
+                                        snackBarHostState.showSnackbar("Транзакция удалена")
+                                    }
+                                }
+                                false -> {
+                                    scope.launch {
+                                        snackBarHostState.showSnackbar("Транзакция не удалена")
+                                    }
+                                }
+                            }
+                        }
+                        value = false
+                    }
+                )
             }
         }
     }
