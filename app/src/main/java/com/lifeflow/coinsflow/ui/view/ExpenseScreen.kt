@@ -49,18 +49,15 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.navigation.NavHostController
-import com.lifeflow.coinsflow.model.Account
-import com.lifeflow.coinsflow.model.Asset
 import com.lifeflow.coinsflow.viewModel.FireViewModel
-import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExpensesScreen(nv: NavHostController, mv: FireViewModel) {
+fun ExpensesScreen(
+    backUp: () -> Unit,
+    mv: FireViewModel
+) {
     var assets by remember { mutableStateOf("Актив") }
     var accounts by remember { mutableStateOf("Счет") }
     var total by remember { mutableStateOf("") }
@@ -80,7 +77,7 @@ fun ExpensesScreen(nv: NavHostController, mv: FireViewModel) {
             TopAppBar(
                 title = { Text("Расход", textAlign = TextAlign.Center) },
                 navigationIcon = {
-                    IconButton(onClick = { nv.popBackStack() }) {
+                    IconButton(onClick = { backUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
@@ -95,7 +92,7 @@ fun ExpensesScreen(nv: NavHostController, mv: FireViewModel) {
                     .padding(16.dp)
             ) {
                 // Поле Дата
-                DateBox(
+                ExpenseDateBox(
                     datePickerState = datePickerState,
                     selectedDate = selectedDate,
                 )
@@ -103,14 +100,14 @@ fun ExpensesScreen(nv: NavHostController, mv: FireViewModel) {
                 HorizontalDivider()
 
                 // Поле Актив
-                AssetBox(
+                ExpenseAssetBox(
                     assets = assets,
                     onAssetChange = { newValue -> assets = newValue }
                 )
                 HorizontalDivider()
 
                 // Поле Счет
-                AccountBox(
+                ExpenseAccountBox(
                     accounts = accounts,
                     onAccountChange = { newValue -> accounts = newValue }
                 )
@@ -118,21 +115,21 @@ fun ExpensesScreen(nv: NavHostController, mv: FireViewModel) {
                 HorizontalDivider()
 
                 // Поле Категория
-                CategoryBox(
+                ExpenseCategoryBox(
                     category = category,
                     onCategoryChange = { newValue -> category = newValue }
                 )
                 HorizontalDivider()
 
                 // Поле Чек
-                ChequeBox(
+                ExpenseChequeBox(
                     onCheckRout = {}
                 )
 
                 HorizontalDivider()
 
                 // Поле Сумма
-                TotalBox(
+                ExpenseTotalBox(
                     total = total,
                     onTotalChange = { newValue -> total = newValue }
                 )
@@ -153,7 +150,9 @@ fun ExpensesScreen(nv: NavHostController, mv: FireViewModel) {
                                 id = id,
                             ),
                             path = id
-                        ).isCompleted.let { answer ->
+                        )
+                        backUp()
+                        /*.isCompleted.let { answer ->
                             when (answer) {
                                 true -> {
                                     scope.launch {
@@ -166,7 +165,7 @@ fun ExpensesScreen(nv: NavHostController, mv: FireViewModel) {
                                     }
                                 }
                             }
-                        }
+                        }*/
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -180,7 +179,7 @@ fun ExpensesScreen(nv: NavHostController, mv: FireViewModel) {
 }
 
 @Composable
-fun TotalBox(
+fun ExpenseTotalBox(
     total: String,
     onTotalChange: (String) -> Unit
 ) {
@@ -206,7 +205,7 @@ fun TotalBox(
 }
 
 @Composable
-fun ChequeBox(
+fun ExpenseChequeBox(
     onCheckRout: (String) -> Unit
 ) {
     Box(
@@ -234,7 +233,7 @@ fun ChequeBox(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DateBox(
+fun ExpenseDateBox(
     selectedDate: String,
     datePickerState: DatePickerState,
 ) {
@@ -284,7 +283,7 @@ fun DateBox(
 }
 
 @Composable
-fun AssetBox(
+fun ExpenseAssetBox(
     assets: String,
     onAssetChange: (String) -> Unit
 ) {
@@ -326,7 +325,7 @@ fun AssetBox(
 }
 
 @Composable
-fun AccountBox(
+fun ExpenseAccountBox(
     accounts: String,
     onAccountChange: (String) -> Unit
 ) {
@@ -368,7 +367,7 @@ fun AccountBox(
 }
 
 @Composable
-fun CategoryBox(
+fun ExpenseCategoryBox(
     category: String,
     onCategoryChange: (String) -> Unit
 ) {
@@ -414,9 +413,4 @@ fun CategoryBox(
             )
         }
     }
-}
-
-fun convertMillisToDate(millis: Long): String {
-    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    return formatter.format(Date(millis))
 }

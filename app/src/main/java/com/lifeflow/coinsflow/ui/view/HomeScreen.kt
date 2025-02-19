@@ -18,7 +18,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.lifeflow.coinsflow.model.Account
 import com.lifeflow.coinsflow.model.Transactions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
@@ -49,16 +48,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.google.firebase.firestore.FirebaseFirestore
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
-    nv: NavHostController,
     mv: FireViewModel,
-    onButtonClick: () -> Unit,
+    navOnExpenseScreen: () -> Unit,
+    navOnIncomeScreen: () -> Unit
 ) {
     val transactions by mv.transactions.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -73,7 +70,7 @@ fun HomeScreen(
                     .padding(innerPadding)
             ) {
 
-                MainBar(nv, onButtonClick)
+                MainBar(navOnExpenseScreen, navOnIncomeScreen)
                 Transactions(transactions, mv, score, snackBarHostState)
             }
         }
@@ -81,7 +78,10 @@ fun HomeScreen(
 }
 
 @Composable
-fun MainBar(nv: NavHostController, onButtonClick: () -> Unit) {
+fun MainBar(
+    navOnExpenseScreen: () -> Unit,
+    navOnIncomeScreen: () -> Unit
+) {
     Card(
         modifier = Modifier
             .height(300.dp)
@@ -133,7 +133,9 @@ fun MainBar(nv: NavHostController, onButtonClick: () -> Unit) {
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(
-                    onClick = { },
+                    onClick = {
+                        navOnIncomeScreen()
+                    },
                     modifier = Modifier.weight(2f)
                 ) {
                     Icon(
@@ -144,7 +146,7 @@ fun MainBar(nv: NavHostController, onButtonClick: () -> Unit) {
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(
                     onClick = {
-                        onButtonClick()
+                        navOnExpenseScreen()
                     },
                     modifier = Modifier.weight(2f)
                 ) {
@@ -243,7 +245,7 @@ fun TransactionItem(
                 DropdownMenuItem(
                     text = { Text("Удалить") },
                     onClick = {
-                        mv.deleteTransactions(transaction).isCompleted.let { answer ->
+                        mv.deleteTransactions(transaction)/*.isCompleted.let { answer ->
                             when (answer) {
                                 true -> {
                                     scope.launch {
@@ -256,7 +258,7 @@ fun TransactionItem(
                                     }
                                 }
                             }
-                        }
+                        }*/
                         value = false
                     }
                 )

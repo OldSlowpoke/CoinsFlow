@@ -71,16 +71,19 @@ fun MainScreen() {
         ) {
             composable(NavRoutes.Home.route) {
                 HomeScreen(
-                    navController,
                     vm,
-                    onButtonClick = {
+                    navOnExpenseScreen = {
                         navController.navigate(NavRoutes.Expenses.route)
+                    },
+                    navOnIncomeScreen = {
+                        navController.navigate(NavRoutes.Incomes.route)
                     }
                 )
             }
             composable(NavRoutes.Contacts.route) { StatisticsScreen() }
             composable(NavRoutes.About.route) { ProfileScreen() }
-            composable(NavRoutes.Expenses.route) { ExpensesScreen(navController, vm) }
+            composable(NavRoutes.Expenses.route) { ExpensesScreen(backUp ={navController.popBackStack()}, vm) }
+            composable(NavRoutes.Incomes.route) { IncomesScreen(backUp ={navController.popBackStack()}, vm) }
         }
         BottomNavigationBar(navController = navController)
     }
@@ -150,12 +153,13 @@ sealed class NavRoutes(val route: String) {
     data object Profile : NavRoutes("profile")
     data object Statistics : NavRoutes("statistics")
     data object Check : NavRoutes("check")
+    data object Incomes : NavRoutes("incomes")
 }
 
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     CoinsFlowTheme {
-        IncomesScreen()
+
     }
 }
