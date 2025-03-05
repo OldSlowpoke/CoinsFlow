@@ -45,9 +45,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.lifeflow.coinsflow.R
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 import kotlinx.coroutines.CoroutineScope
 
@@ -55,32 +58,25 @@ import kotlinx.coroutines.CoroutineScope
 fun HomeScreen(
     mv: FireViewModel,
     navOnExpenseScreen: () -> Unit,
-    navOnIncomeScreen: () -> Unit
+    navOnIncomeScreen: () -> Unit,
+    navOnRoutes: () -> Unit
 ) {
     val transactions by mv.transactions.collectAsState()
-    val snackBarHostState = remember { SnackbarHostState() }
-    val score = rememberCoroutineScope()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackBarHostState) },
-        content = { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-            ) {
-
-                MainBar(navOnExpenseScreen, navOnIncomeScreen)
-                Transactions(transactions, mv, score, snackBarHostState)
-            }
-        }
-    )
+        MainBar(navOnExpenseScreen, navOnIncomeScreen, navOnRoutes)
+        Transactions(transactions, mv)
+    }
 }
 
 @Composable
 fun MainBar(
     navOnExpenseScreen: () -> Unit,
-    navOnIncomeScreen: () -> Unit
+    navOnIncomeScreen: () -> Unit,
+    navOnRoutes: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -123,7 +119,9 @@ fun MainBar(
                     .weight(2f)
             ) {
                 IconButton(
-                    onClick = { },
+                    onClick = {
+                        navOnRoutes()
+                    },
                     modifier = Modifier.weight(2f)
                 ) {
                     Icon(
@@ -165,8 +163,6 @@ fun MainBar(
 fun Transactions(
     expens: List<Transactions>,
     mv: FireViewModel,
-    scope: CoroutineScope,
-    snackBarHostState: SnackbarHostState
 ) {
     val groups = expens.groupBy { it.date }
     LazyColumn {
@@ -183,7 +179,7 @@ fun Transactions(
                 )
             }
             items(incomes.size) { index ->
-                TransactionItem(transaction = incomes[index], mv, scope, snackBarHostState)
+                TransactionItem(transaction = incomes[index], mv)
             }
         }
     }
@@ -193,8 +189,6 @@ fun Transactions(
 fun TransactionItem(
     transaction: Transactions,
     mv: FireViewModel,
-    scope: CoroutineScope,
-    snackBarHostState: SnackbarHostState
 ) {
     var value by rememberSaveable { mutableStateOf(false) }
     Box(
@@ -226,7 +220,7 @@ fun TransactionItem(
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(
-                        Icons.Filled.Edit,
+                        ImageVector.vectorResource(R.drawable.baseline_edit_24),
                         contentDescription = "Edit"
                     )
                 }
@@ -245,20 +239,7 @@ fun TransactionItem(
                 DropdownMenuItem(
                     text = { Text("Удалить") },
                     onClick = {
-                        mv.deleteTransactions(transaction)/*.isCompleted.let { answer ->
-                            when (answer) {
-                                true -> {
-                                    scope.launch {
-                                        snackBarHostState.showSnackbar("Транзакция удалена")
-                                    }
-                                }
-                                false -> {
-                                    scope.launch {
-                                        snackBarHostState.showSnackbar("Транзакция не удалена")
-                                    }
-                                }
-                            }
-                        }*/
+                        mv.deleteTransactions(transaction)
                         value = false
                     }
                 )

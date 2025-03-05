@@ -43,12 +43,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.navigation.NavHostController
+import com.lifeflow.coinsflow.R
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 
 
@@ -69,113 +72,94 @@ fun ExpensesScreen(
         convertMillisToDate(it)
     } ?: ""
 
-    val snackBarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        // Поле Дата
+        ExpenseDateBox(
+            datePickerState = datePickerState,
+            selectedDate = selectedDate,
+        )
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Расход", textAlign = TextAlign.Center) },
-                navigationIcon = {
-                    IconButton(onClick = { backUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        },
-        snackbarHost = { SnackbarHost(snackBarHostState) },
-        content = { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(16.dp)
-            ) {
-                // Поле Дата
-                ExpenseDateBox(
-                    datePickerState = datePickerState,
-                    selectedDate = selectedDate,
+        HorizontalDivider()
+
+        // Поле Актив
+        ExpenseAssetBox(
+            assets = assets,
+            onAssetChange = { newValue -> assets = newValue }
+        )
+        HorizontalDivider()
+
+        // Поле Счет
+        ExpenseAccountBox(
+            accounts = accounts,
+            onAccountChange = { newValue -> accounts = newValue }
+        )
+
+        HorizontalDivider()
+
+        // Поле Категория
+        ExpenseCategoryBox(
+            category = category,
+            onCategoryChange = { newValue -> category = newValue }
+        )
+        HorizontalDivider()
+
+        // Поле Чек
+        ExpenseChequeBox(
+            onCheckRout = {}
+        )
+
+        HorizontalDivider()
+
+        // Поле Сумма
+        ExpenseTotalBox(
+            total = total,
+            onTotalChange = { newValue -> total = newValue }
+        )
+
+
+        HorizontalDivider()
+
+        // Кнопка Сохранить
+        Button(
+            onClick = {
+                id = mv.getLinkOnFirePath("transactions")
+                mv.addTransactions(
+                    com.lifeflow.coinsflow.model.Transactions(
+                        date = selectedDate,
+                        total = total.toDouble(),
+                        type = "расход",
+                        category = category,
+                        id = id,
+                    ),
+                    path = id
                 )
-
-                HorizontalDivider()
-
-                // Поле Актив
-                ExpenseAssetBox(
-                    assets = assets,
-                    onAssetChange = { newValue -> assets = newValue }
-                )
-                HorizontalDivider()
-
-                // Поле Счет
-                ExpenseAccountBox(
-                    accounts = accounts,
-                    onAccountChange = { newValue -> accounts = newValue }
-                )
-
-                HorizontalDivider()
-
-                // Поле Категория
-                ExpenseCategoryBox(
-                    category = category,
-                    onCategoryChange = { newValue -> category = newValue }
-                )
-                HorizontalDivider()
-
-                // Поле Чек
-                ExpenseChequeBox(
-                    onCheckRout = {}
-                )
-
-                HorizontalDivider()
-
-                // Поле Сумма
-                ExpenseTotalBox(
-                    total = total,
-                    onTotalChange = { newValue -> total = newValue }
-                )
-
-
-                HorizontalDivider()
-
-                // Кнопка Сохранить
-                Button(
-                    onClick = {
-                        id = mv.getLinkOnFirePath("transactions")
-                        mv.addTransactions(
-                            com.lifeflow.coinsflow.model.Transactions(
-                                date = selectedDate,
-                                total = total.toDouble(),
-                                type = "расход",
-                                category = category,
-                                id = id,
-                            ),
-                            path = id
-                        )
-                        backUp()
-                        /*.isCompleted.let { answer ->
-                            when (answer) {
-                                true -> {
-                                    scope.launch {
-                                        snackBarHostState.showSnackbar("Транзакция удалена")
-                                    }
-                                }
-                                false -> {
-                                    scope.launch {
-                                        snackBarHostState.showSnackbar("Транзакция не удалена")
-                                    }
-                                }
+                backUp()
+                /*.isCompleted.let { answer ->
+                    when (answer) {
+                        true -> {
+                            scope.launch {
+                                snackBarHostState.showSnackbar("Транзакция удалена")
                             }
-                        }*/
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp)
-                ) {
-                    Text("Сохранить")
-                }
-            }
+                        }
+                        false -> {
+                            scope.launch {
+                                snackBarHostState.showSnackbar("Транзакция не удалена")
+                            }
+                        }
+                    }
+                }*/
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp)
+        ) {
+            Text("Сохранить")
         }
-    )
+    }
 }
 
 @Composable
@@ -224,7 +208,8 @@ fun ExpenseChequeBox(
                 modifier = Modifier.padding(8.dp)
             )
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                imageVector = ImageVector
+                    .vectorResource(R.drawable.baseline_keyboard_arrow_right_24),
                 contentDescription = null
             )
         }
@@ -249,7 +234,8 @@ fun ExpenseDateBox(
             trailingIcon = {
                 IconButton(onClick = { showDatePicker = !showDatePicker }) {
                     Icon(
-                        imageVector = Icons.Default.DateRange,
+                        imageVector = ImageVector
+                            .vectorResource(R.drawable.baseline_date_range_24),
                         contentDescription = "Select date"
                     )
                 }
@@ -304,7 +290,8 @@ fun ExpenseAssetBox(
                 modifier = Modifier.padding(8.dp)
             )
             Icon(
-                imageVector = Icons.Default.ArrowDropDown,
+                imageVector = ImageVector
+                    .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
                 contentDescription = null
             )
         }
@@ -346,7 +333,8 @@ fun ExpenseAccountBox(
                 modifier = Modifier.padding(8.dp)
             )
             Icon(
-                imageVector = Icons.Default.ArrowDropDown,
+                imageVector = ImageVector
+                    .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
                 contentDescription = null
             )
         }
@@ -388,7 +376,8 @@ fun ExpenseCategoryBox(
                 modifier = Modifier.padding(8.dp)
             )
             Icon(
-                imageVector = Icons.Default.ArrowDropDown,
+                imageVector = ImageVector
+                    .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
                 contentDescription = null
             )
         }

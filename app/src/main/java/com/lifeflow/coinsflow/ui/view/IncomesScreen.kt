@@ -35,6 +35,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.getValue
@@ -43,12 +44,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.navigation.NavHostController
+import com.lifeflow.coinsflow.R
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,104 +75,88 @@ fun IncomesScreen(
     val snackBarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Доход", textAlign = TextAlign.Center) },
-                navigationIcon = {
-                    IconButton(onClick = { backUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        },
-        snackbarHost = { SnackbarHost(snackBarHostState) },
-        content = { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(16.dp)
-            ) {
-                // Поле Дата
-                IncomesDateBox(
-                    datePickerState = datePickerState,
-                    selectedDate = selectedDate,
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        // Поле Дата
+        IncomesDateBox(
+            datePickerState = datePickerState,
+            selectedDate = selectedDate,
+        )
+
+        HorizontalDivider()
+
+        // Поле Актив
+        IncomesAssetBox(
+            assets = assets,
+            onAssetChange = { newValue -> assets = newValue }
+        )
+        HorizontalDivider()
+
+        // Поле Счет
+        IncomesAccountBox(
+            accounts = accounts,
+            onAccountChange = { newValue -> accounts = newValue }
+        )
+
+        HorizontalDivider()
+
+        // Поле Категория
+        IncomesCategoryBox(
+            category = category,
+            onCategoryChange = { newValue -> category = newValue }
+        )
+
+        HorizontalDivider()
+
+        // Поле Сумма
+        IncomesTotalBox(
+            total = total,
+            onTotalChange = { newValue -> total = newValue }
+        )
+
+
+        HorizontalDivider()
+
+        // Кнопка Сохранить
+        Button(
+            onClick = {
+                id = mv.getLinkOnFirePath("transactions")
+                mv.addTransactions(
+                    com.lifeflow.coinsflow.model.Transactions(
+                        date = selectedDate,
+                        total = total.toDouble(),
+                        type = "доход",
+                        category = category,
+                        id = id,
+                    ),
+                    path = id
                 )
-
-                HorizontalDivider()
-
-                // Поле Актив
-                IncomesAssetBox(
-                    assets = assets,
-                    onAssetChange = { newValue -> assets = newValue }
-                )
-                HorizontalDivider()
-
-                // Поле Счет
-                IncomesAccountBox(
-                    accounts = accounts,
-                    onAccountChange = { newValue -> accounts = newValue }
-                )
-
-                HorizontalDivider()
-
-                // Поле Категория
-                IncomesCategoryBox(
-                    category = category,
-                    onCategoryChange = { newValue -> category = newValue }
-                )
-
-                HorizontalDivider()
-
-                // Поле Сумма
-                IncomesTotalBox(
-                    total = total,
-                    onTotalChange = { newValue -> total = newValue }
-                )
-
-
-                HorizontalDivider()
-
-                // Кнопка Сохранить
-                Button(
-                    onClick = {
-                        id = mv.getLinkOnFirePath("transactions")
-                        mv.addTransactions(
-                            com.lifeflow.coinsflow.model.Transactions(
-                                date = selectedDate,
-                                total = total.toDouble(),
-                                type = "доход",
-                                category = category,
-                                id = id,
-                            ),
-                            path = id
-                        )
-                        backUp()
-                        /*.isCompleted.let { answer ->
-                            when (answer) {
-                                true -> {
-                                    scope.launch {
-                                        snackBarHostState.showSnackbar("Транзакция удалена")
-                                    }
-                                }
-                                false -> {
-                                    scope.launch {
-                                        snackBarHostState.showSnackbar("Транзакция не удалена")
-                                    }
-                                }
+                backUp()
+                /*.isCompleted.let { answer ->
+                    when (answer) {
+                        true -> {
+                            scope.launch {
+                                snackBarHostState.showSnackbar("Транзакция удалена")
                             }
-                        }*/
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp)
-                ) {
-                    Text("Сохранить")
-                }
-            }
+                        }
+                        false -> {
+                            scope.launch {
+                                snackBarHostState.showSnackbar("Транзакция не удалена")
+                            }
+                        }
+                    }
+                }*/
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp)
+        ) {
+            Text("Сохранить")
         }
-    )
+    }
 }
 
 @Composable
@@ -207,7 +195,7 @@ fun IncomesDateBox(
     Box(
         modifier = Modifier.fillMaxWidth()
     ) {
-        OutlinedTextField(
+        TextField(
             value = selectedDate,
             onValueChange = { },
             label = { Text("Дата") },
@@ -215,7 +203,8 @@ fun IncomesDateBox(
             trailingIcon = {
                 IconButton(onClick = { showDatePicker = !showDatePicker }) {
                     Icon(
-                        imageVector = Icons.Default.DateRange,
+                        imageVector = ImageVector
+                            .vectorResource(R.drawable.baseline_date_range_24),
                         contentDescription = "Select date"
                     )
                 }
@@ -270,7 +259,8 @@ fun IncomesAssetBox(
                 modifier = Modifier.padding(8.dp)
             )
             Icon(
-                imageVector = Icons.Default.ArrowDropDown,
+                imageVector = ImageVector
+                    .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
                 contentDescription = null
             )
         }
@@ -312,7 +302,8 @@ fun IncomesAccountBox(
                 modifier = Modifier.padding(8.dp)
             )
             Icon(
-                imageVector = Icons.Default.ArrowDropDown,
+                imageVector = ImageVector
+                    .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
                 contentDescription = null
             )
         }
@@ -354,7 +345,8 @@ fun IncomesCategoryBox(
                 modifier = Modifier.padding(8.dp)
             )
             Icon(
-                imageVector = Icons.Default.ArrowDropDown,
+                imageVector = ImageVector
+                    .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
                 contentDescription = null
             )
         }
