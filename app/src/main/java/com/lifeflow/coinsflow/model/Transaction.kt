@@ -1,6 +1,6 @@
 package com.lifeflow.coinsflow.model
 
-data class Transactions(
+data class Transaction(
     val id: String = "",
     val date: String = "",
     val type: String = "",

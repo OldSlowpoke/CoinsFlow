@@ -15,11 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerState
@@ -31,12 +26,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -47,19 +39,18 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
-import androidx.navigation.NavHostController
 import com.lifeflow.coinsflow.R
+import com.lifeflow.coinsflow.model.Transaction
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IncomesScreen(
     backUp: () -> Unit,
-    mv: FireViewModel
+    vm: FireViewModel
 ) {
     var assets by remember { mutableStateOf("Актив") }
     var accounts by remember { mutableStateOf("Счет") }
@@ -123,9 +114,9 @@ fun IncomesScreen(
         // Кнопка Сохранить
         Button(
             onClick = {
-                id = mv.getLinkOnFirePath("transactions")
-                mv.addTransactions(
-                    com.lifeflow.coinsflow.model.Transactions(
+                id = vm.getLinkOnFirePath("transactions")
+                vm.addTransactions(
+                    Transaction(
                         date = selectedDate,
                         total = total.toDouble(),
                         type = "доход",

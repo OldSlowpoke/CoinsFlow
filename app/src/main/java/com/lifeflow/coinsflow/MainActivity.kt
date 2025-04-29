@@ -4,6 +4,7 @@ CoinsFlow VERSION: 0.0.1
 
 package com.lifeflow.coinsflow
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,6 +21,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -34,6 +36,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.lifeflow.coinsflow.ui.theme.CoinsFlowTheme
+import com.lifeflow.coinsflow.ui.view.AddCategoryScreen
+import com.lifeflow.coinsflow.ui.view.AddProductScreen
+import com.lifeflow.coinsflow.ui.view.AuthScreen
+import com.lifeflow.coinsflow.ui.view.CategoriesScreen
+import com.lifeflow.coinsflow.ui.view.CheckScreen
 import com.lifeflow.coinsflow.ui.view.ExpensesScreen
 import com.lifeflow.coinsflow.ui.view.HomeScreen
 import com.lifeflow.coinsflow.ui.view.IncomesScreen
@@ -52,21 +59,25 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CoinsFlowTheme {
-                Surface{
+                Surface {
                     //IncomesScreen()
                     //HomeScreen(db)
                     //ExpensesScreen()
                     //ProfileScreen()
                     //StatisticsScreen()
                     //CheckScreen()
-                    MainScreen()
                     //RoutesScreen()
+                    //ProductsScreen()
+                    //AddProductScreen()
+
+                    MainScreen()
                 }
             }
         }
     }
 }
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
@@ -99,6 +110,7 @@ fun MainScreen() {
                     "Transactions",
                     "Profile",
                     "Statistics",
+                    "Login"
                 )
             ) {
                 FlowAppBar(
@@ -108,12 +120,17 @@ fun MainScreen() {
             }
         },
         bottomBar = {
-            BottomNavigationBar(navController = navController)
+            if (currentScreen.name !in listOf(
+                    "Login"
+                )
+            ) {
+                BottomNavigationBar(navController = navController)
+            }
         }
     ) { innerPadding ->
         NavHost(
             navController,
-            startDestination = NavRoutes.Transactions.name,
+            startDestination = if (vm.uiState.value.isAuthenticated) NavRoutes.Transactions.name else NavRoutes.Login.name,
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(NavRoutes.Transactions.name) {
@@ -131,7 +148,12 @@ fun MainScreen() {
                 )
             }
             composable(NavRoutes.Statistics.name) { StatisticsScreen() }
-            composable(NavRoutes.Profile.name) { ProfileScreen() }
+            composable(NavRoutes.Profile.name) { ProfileScreen(
+                vm,
+                navOnLogout = {
+                    navController.navigate(NavRoutes.Login.name)
+                }
+            ) }
             composable(NavRoutes.Expenses.name) {
                 ExpensesScreen(
                     backUp = { navController.popBackStack() },
@@ -144,11 +166,53 @@ fun MainScreen() {
                     vm
                 )
             }
-            composable(NavRoutes.Routes.name) { RoutesScreen() }
-            composable(NavRoutes.Products.name) { ProductsScreen() }
+            composable(NavRoutes.Routes.name) {
+                RoutesScreen(
+                    vm,
+                    navOnProducts = {
+                        navController.navigate(NavRoutes.Products.name)
+                    },
+                    navOnCategories = {
+                        navController.navigate(NavRoutes.Categories.name)
+                    }
+                )
+            }
+            composable(NavRoutes.Products.name) {
+                ProductsScreen(
+                    vm,
+                    navAddProduct = {
+                        navController.navigate(NavRoutes.AddProduct.name)
+                    }
+                )
+            }
             composable(NavRoutes.Product.name) { ProductScreen() }
             composable(NavRoutes.Check.name) {}
-            composable(NavRoutes.Categories.name) {}
+            composable(NavRoutes.Categories.name) {
+                CategoriesScreen(
+                    vm,
+                    navAddCategories = {
+                        navController.navigate(NavRoutes.AddCategory.name)
+                    }
+                )
+            }
+            composable(NavRoutes.AddProduct.name) {
+                AddProductScreen(
+                    vm,
+                    backUp = { navController.popBackStack() })
+            }
+            composable(NavRoutes.AddCategory.name) {
+                AddCategoryScreen(
+                    vm,
+                    backUp = { navController.popBackStack() })
+            }
+            composable(NavRoutes.Login.name) {
+                AuthScreen(
+                    vm = vm,
+                    onNavigateToHome = {
+                        navController.navigate(NavRoutes.Transactions.name)
+                    }
+                )
+            }
 
         }
     }
@@ -255,12 +319,15 @@ enum class NavRoutes(@StringRes val route: Int) {
     Products(route = R.string.products),
     Product(route = R.string.product),
     Categories(route = R.string.categories),
+    AddProduct(route = R.string.add_product),
+    AddCategory(route = R.string.add_categories),
+    Login(route = R.string.login)
 }
 
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     CoinsFlowTheme {
-        RoutesScreen()
+
     }
 }

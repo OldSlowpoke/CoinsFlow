@@ -18,7 +18,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.lifeflow.coinsflow.model.Transactions
+import com.lifeflow.coinsflow.model.Transaction
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.lifeflow.coinsflow.ui.theme.GrayDark
 import com.lifeflow.coinsflow.ui.theme.GrayLight
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -37,38 +36,32 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.lifeflow.coinsflow.R
 import com.lifeflow.coinsflow.viewModel.FireViewModel
-import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun HomeScreen(
-    mv: FireViewModel,
+    vm: FireViewModel,
     navOnExpenseScreen: () -> Unit,
     navOnIncomeScreen: () -> Unit,
     navOnRoutes: () -> Unit
 ) {
-    val transactions by mv.transactions.collectAsState()
+    val transactions by vm.transactions.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
     ) {
 
         MainBar(navOnExpenseScreen, navOnIncomeScreen, navOnRoutes)
-        Transactions(transactions, mv)
+        Transactions(transactions, vm)
     }
 }
 
@@ -161,7 +154,7 @@ fun MainBar(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Transactions(
-    expens: List<Transactions>,
+    expens: List<Transaction>,
     mv: FireViewModel,
 ) {
     val groups = expens.groupBy { it.date }
@@ -187,7 +180,7 @@ fun Transactions(
 
 @Composable
 fun TransactionItem(
-    transaction: Transactions,
+    transaction: Transaction,
     mv: FireViewModel,
 ) {
     var value by rememberSaveable { mutableStateOf(false) }

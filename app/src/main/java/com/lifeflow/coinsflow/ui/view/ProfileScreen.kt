@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -31,12 +32,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.lifeflow.coinsflow.model.Account
 import com.lifeflow.coinsflow.model.Asset
 import com.lifeflow.coinsflow.ui.theme.GrayLight
+import com.lifeflow.coinsflow.viewModel.FireViewModel
 
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(
+    vm: FireViewModel = hiltViewModel(),
+    navOnLogout: () -> Unit
+) {
     val apartmentAccounts = listOf(
         Account(accountName = "Счет 1", initialAmount = 1000.0),
         Account(accountName = "Счет 2", initialAmount = 2000.0)
@@ -61,7 +67,17 @@ fun ProfileScreen() {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
+        Button(
+            onClick = {
+                vm.logout()
+                navOnLogout()
+            }
+        ) {
+            Text("Logout")
+        }
+
         ProfileBar()
+
         AssetsList(assets)
         //Incom()
     }

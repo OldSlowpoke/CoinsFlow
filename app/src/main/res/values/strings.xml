@@ -9,4 +9,7 @@
     <string name="products">Products</string>
     <string name="product">Product</string>
     <string name="categories">Categories</string>
+    <string name="add_product">AddProduct</string>
+    <string name="add_categories">AddCategories</string>
+    <string name="login">Login</string>
 </resources>

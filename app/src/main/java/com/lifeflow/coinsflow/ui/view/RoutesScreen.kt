@@ -17,10 +17,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.lifeflow.coinsflow.R
+import com.lifeflow.coinsflow.viewModel.FireViewModel
 
 @Composable
 fun RoutesScreen(
-
+    mv: FireViewModel,
+    navOnProducts: () -> Unit,
+    navOnCategories: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize()
@@ -29,7 +32,7 @@ fun RoutesScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    // TODO: Navigate to categories screen
+                    navOnCategories()
                 }
                 .padding(8.dp)
         ) {
@@ -53,14 +56,14 @@ fun RoutesScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    // TODO: Navigate to products screen
+                    navOnProducts()
                 }
                 .padding(8.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(
                     text = "Товары",
