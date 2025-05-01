@@ -1,4 +1,4 @@
-package com.lifeflow.coinsflow.ui.view
+package com.lifeflow.coinsflow.ui.view.mainscreens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,12 +26,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,14 +40,15 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import com.lifeflow.coinsflow.R
-import com.lifeflow.coinsflow.model.Transaction
+import com.lifeflow.coinsflow.ui.view.convertMillisToDate
 import com.lifeflow.coinsflow.viewModel.FireViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IncomesScreen(
+fun ExpensesScreen(
     backUp: () -> Unit,
-    vm: FireViewModel
+    mv: FireViewModel
 ) {
     var assets by remember { mutableStateOf("Актив") }
     var accounts by remember { mutableStateOf("Счет") }
@@ -63,16 +61,13 @@ fun IncomesScreen(
         convertMillisToDate(it)
     } ?: ""
 
-    val snackBarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
         // Поле Дата
-        IncomesDateBox(
+        ExpenseDateBox(
             datePickerState = datePickerState,
             selectedDate = selectedDate,
         )
@@ -80,14 +75,14 @@ fun IncomesScreen(
         HorizontalDivider()
 
         // Поле Актив
-        IncomesAssetBox(
+        ExpenseAssetBox(
             assets = assets,
             onAssetChange = { newValue -> assets = newValue }
         )
         HorizontalDivider()
 
         // Поле Счет
-        IncomesAccountBox(
+        ExpenseAccountBox(
             accounts = accounts,
             onAccountChange = { newValue -> accounts = newValue }
         )
@@ -95,15 +90,21 @@ fun IncomesScreen(
         HorizontalDivider()
 
         // Поле Категория
-        IncomesCategoryBox(
+        ExpenseCategoryBox(
             category = category,
             onCategoryChange = { newValue -> category = newValue }
+        )
+        HorizontalDivider()
+
+        // Поле Чек
+        ExpenseChequeBox(
+            onCheckRout = {}
         )
 
         HorizontalDivider()
 
         // Поле Сумма
-        IncomesTotalBox(
+        ExpenseTotalBox(
             total = total,
             onTotalChange = { newValue -> total = newValue }
         )
@@ -114,12 +115,12 @@ fun IncomesScreen(
         // Кнопка Сохранить
         Button(
             onClick = {
-                id = vm.getLinkOnFirePath("transactions")
-                vm.addTransactions(
-                    Transaction(
+                id = mv.getLinkOnFirePath("transactions")
+                mv.addTransactions(
+                    com.lifeflow.coinsflow.model.Transaction(
                         date = selectedDate,
                         total = total.toDouble(),
-                        type = "доход",
+                        type = "расход",
                         category = category,
                         id = id,
                     ),
@@ -151,7 +152,7 @@ fun IncomesScreen(
 }
 
 @Composable
-fun IncomesTotalBox(
+fun ExpenseTotalBox(
     total: String,
     onTotalChange: (String) -> Unit
 ) {
@@ -161,7 +162,7 @@ fun IncomesTotalBox(
             if (
                 newValue.isBlank() || newValue
                     .matches(
-                        "\\d*(\\.\\d{0,2})?"
+                        "-\\d*(\\.\\d{0,2})?"
                             .toRegex()
                     )
             ) {
@@ -176,9 +177,37 @@ fun IncomesTotalBox(
     )
 }
 
+@Composable
+fun ExpenseChequeBox(
+    onCheckRout: (String) -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {}
+            .padding(vertical = 8.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Чек",
+                modifier = Modifier.padding(8.dp)
+            )
+            Icon(
+                imageVector = ImageVector
+                    .vectorResource(R.drawable.baseline_keyboard_arrow_right_24),
+                contentDescription = null
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IncomesDateBox(
+fun ExpenseDateBox(
     selectedDate: String,
     datePickerState: DatePickerState,
 ) {
@@ -186,7 +215,7 @@ fun IncomesDateBox(
     Box(
         modifier = Modifier.fillMaxWidth()
     ) {
-        TextField(
+        OutlinedTextField(
             value = selectedDate,
             onValueChange = { },
             label = { Text("Дата") },
@@ -229,7 +258,7 @@ fun IncomesDateBox(
 }
 
 @Composable
-fun IncomesAssetBox(
+fun ExpenseAssetBox(
     assets: String,
     onAssetChange: (String) -> Unit
 ) {
@@ -272,7 +301,7 @@ fun IncomesAssetBox(
 }
 
 @Composable
-fun IncomesAccountBox(
+fun ExpenseAccountBox(
     accounts: String,
     onAccountChange: (String) -> Unit
 ) {
@@ -315,7 +344,7 @@ fun IncomesAccountBox(
 }
 
 @Composable
-fun IncomesCategoryBox(
+fun ExpenseCategoryBox(
     category: String,
     onCategoryChange: (String) -> Unit
 ) {

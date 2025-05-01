@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lifeflow.coinsflow.model.Category
 import com.lifeflow.coinsflow.model.Product
+import com.lifeflow.coinsflow.model.SubCategory
 import com.lifeflow.coinsflow.model.Transaction
 import com.lifeflow.coinsflow.model.repository.FireRepository
 import com.lifeflow.coinsflow.model.uistate.AuthUiState
@@ -99,6 +100,15 @@ class FireViewModel @Inject constructor(
 
     fun deleteCategories(category: Category) = viewModelScope.launch {
         fireRepository.deleteCategory(category)
+    }
+
+    //SubCategories
+    fun addSubCategory(category: Category, subCategory: String) = viewModelScope.launch {
+        fireRepository.addSubCategory(category, subCategory)
+    }
+
+    fun deleteSubCategory(category: Category, subCategory: String) = viewModelScope.launch {
+        fireRepository.deleteSubCategory(category, subCategory)
     }
 
     //Products

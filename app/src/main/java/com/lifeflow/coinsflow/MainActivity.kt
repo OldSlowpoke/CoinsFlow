@@ -21,7 +21,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -36,19 +35,19 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.lifeflow.coinsflow.ui.theme.CoinsFlowTheme
-import com.lifeflow.coinsflow.ui.view.AddCategoryScreen
-import com.lifeflow.coinsflow.ui.view.AddProductScreen
+import com.lifeflow.coinsflow.ui.view.mainscreens.routesscreen.categories.AddCategoryScreen
+import com.lifeflow.coinsflow.ui.view.mainscreens.routesscreen.products.AddProductScreen
 import com.lifeflow.coinsflow.ui.view.AuthScreen
-import com.lifeflow.coinsflow.ui.view.CategoriesScreen
-import com.lifeflow.coinsflow.ui.view.CheckScreen
-import com.lifeflow.coinsflow.ui.view.ExpensesScreen
-import com.lifeflow.coinsflow.ui.view.HomeScreen
-import com.lifeflow.coinsflow.ui.view.IncomesScreen
-import com.lifeflow.coinsflow.ui.view.ProductScreen
-import com.lifeflow.coinsflow.ui.view.ProductsScreen
+import com.lifeflow.coinsflow.ui.view.mainscreens.routesscreen.categories.CategoriesScreen
+import com.lifeflow.coinsflow.ui.view.mainscreens.ExpensesScreen
+import com.lifeflow.coinsflow.ui.view.mainscreens.HomeScreen
+import com.lifeflow.coinsflow.ui.view.mainscreens.IncomesScreen
+import com.lifeflow.coinsflow.ui.view.mainscreens.routesscreen.products.ProductScreen
+import com.lifeflow.coinsflow.ui.view.mainscreens.routesscreen.products.ProductsScreen
 import com.lifeflow.coinsflow.ui.view.ProfileScreen
-import com.lifeflow.coinsflow.ui.view.RoutesScreen
+import com.lifeflow.coinsflow.ui.view.mainscreens.routesscreen.RoutesScreen
 import com.lifeflow.coinsflow.ui.view.StatisticsScreen
+import com.lifeflow.coinsflow.ui.view.mainscreens.routesscreen.categories.AddSubCategoryScreen
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -192,6 +191,9 @@ fun MainScreen() {
                     vm,
                     navAddCategories = {
                         navController.navigate(NavRoutes.AddCategory.name)
+                    },
+                    nadAddSubcategories = {
+                        navController.navigate(NavRoutes.AddSubcategory.name)
                     }
                 )
             }
@@ -211,6 +213,12 @@ fun MainScreen() {
                     onNavigateToHome = {
                         navController.navigate(NavRoutes.Transactions.name)
                     }
+                )
+            }
+            composable(NavRoutes.AddSubcategory.name) {
+                AddSubCategoryScreen(
+                    vm,
+                    backUp = { navController.popBackStack() }
                 )
             }
 
@@ -321,7 +329,8 @@ enum class NavRoutes(@StringRes val route: Int) {
     Categories(route = R.string.categories),
     AddProduct(route = R.string.add_product),
     AddCategory(route = R.string.add_categories),
-    Login(route = R.string.login)
+    AddSubcategory(route = R.string.add_subcategories),
+    Login(route = R.string.login),
 }
 
 @Preview(showBackground = true)

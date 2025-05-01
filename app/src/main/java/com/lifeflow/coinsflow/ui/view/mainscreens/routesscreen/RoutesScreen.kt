@@ -1,4 +1,4 @@
-package com.lifeflow.coinsflow.ui.view
+package com.lifeflow.coinsflow.ui.view.mainscreens.routesscreen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

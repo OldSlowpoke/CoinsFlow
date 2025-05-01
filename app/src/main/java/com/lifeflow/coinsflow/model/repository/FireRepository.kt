@@ -1,13 +1,14 @@
 package com.lifeflow.coinsflow.model.repository
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.ktx.Firebase
 import com.lifeflow.coinsflow.model.Category
 import com.lifeflow.coinsflow.model.Product
+import com.lifeflow.coinsflow.model.SubCategory
 import com.lifeflow.coinsflow.model.Transaction
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -146,6 +147,38 @@ class FireRepository @Inject constructor(
             .await()
     }
 
+    suspend fun addSubCategory(category: Category, subCategory: String) {
+        try {
+            firestore
+                .collection("users")
+                .document(currentUserId())
+                .collection("categories")
+                .document(category.id)
+                .update("subcategories", FieldValue.arrayUnion(subCategory))
+                .await()
+        } catch (e: Exception) {
+            // Обработка ошибок (например, логирование)
+            Log.e("FireRepository", "Error adding subcategory", e)
+            throw e
+        }
+    }
+
+    suspend fun deleteSubCategory(category: Category, subCategory: String) {
+        try {
+            firestore
+                .collection("users")
+                .document(currentUserId())
+                .collection("categories")
+                .document(category.id)
+                .update("subcategories", FieldValue.arrayRemove(subCategory))
+                .await()
+        } catch (e: Exception) {
+            // Логируем ошибку
+            Log.e("FireRepository", "Error deleting subcategory", e)
+            throw e
+        }
+    }
+
     suspend fun deleteCategory(category: Category) {
         firestore
             .collection("users")
@@ -201,6 +234,8 @@ class FireRepository @Inject constructor(
         stopAllListeners() // Остановка всех Firestore-слушателей
         firebaseAuth.signOut()
     }
+
+
 }
 
 

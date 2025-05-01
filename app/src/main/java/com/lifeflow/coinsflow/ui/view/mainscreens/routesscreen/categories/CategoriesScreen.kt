@@ -1,5 +1,6 @@
-package com.lifeflow.coinsflow.ui.view
+package com.lifeflow.coinsflow.ui.view.mainscreens.routesscreen.categories
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,11 +17,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lifeflow.coinsflow.model.Category
+import com.lifeflow.coinsflow.model.SubCategory
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 
 
@@ -28,20 +31,24 @@ import com.lifeflow.coinsflow.viewModel.FireViewModel
 fun CategoriesScreen(
     vm: FireViewModel,
     navAddCategories: () -> Unit,
+    nadAddSubcategories: (Category) -> Unit // Теперь передаём выбранную категорию
 ) {
     val categories by vm.categories.collectAsState()
 
     Column {
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                navAddCategories()
-            }
+            onClick = navAddCategories
         ) {
-            Text("Добавить")
+            Text("Добавить категорию транзакции")
         }
         categories.forEachIndexed { index, category ->
-            CategoryItem(category, vm)
+            CategoryItem(
+                category = category,
+                mv = vm,
+                onAddSubcategory = { nadAddSubcategories(category) }, // Передаём текущую категорию
+                onDeleteSubcategory = { subCategory -> vm.deleteSubCategory(category, subCategory) }
+            )
             if (index < categories.size - 1) {
                 HorizontalDivider(
                     modifier = Modifier
@@ -57,7 +64,9 @@ fun CategoriesScreen(
 @Composable
 fun CategoryItem(
     category: Category,
-    mv: FireViewModel
+    mv: FireViewModel,
+    onAddSubcategory: () -> Unit,
+    onDeleteSubcategory: (String) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -82,16 +91,55 @@ fun CategoryItem(
                 modifier = Modifier.weight(6f)
             )
             IconButton(
-                onClick = {
-                    mv.deleteCategories(category)
-                },
+                onClick = { mv.deleteCategories(category) },
                 modifier = Modifier.weight(1f)
             ) {
-                Icon(
-                    Icons.Filled.Delete,
-                    contentDescription = "Delete"
+                Icon(Icons.Filled.Delete, contentDescription = "Удалить категорию")
+            }
+        }
+
+        // Кнопка добавления подкатегории
+        Button(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            onClick = onAddSubcategory
+        ) {
+            Text("Добавить подкатегорию")
+        }
+
+        // Отображение подкатегорий
+        if (category.subcategories.isNotEmpty()) {
+            Text(
+                text = "Подкатегории:",
+                modifier = Modifier.padding(top = 8.dp),
+                fontSize = 16.sp
+            )
+            category.subcategories.forEach { subCategory ->
+                SubCategoryItem(
+                    subCategory = subCategory,
+                    onDelete = { onDeleteSubcategory(subCategory) }
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun SubCategoryItem(
+    subCategory: String,
+    onDelete: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, top = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = subCategory, fontSize = 14.sp)
+        IconButton(onClick = onDelete) {
+            Icon(Icons.Filled.Delete, contentDescription = "Удалить подкатегорию")
         }
     }
 }

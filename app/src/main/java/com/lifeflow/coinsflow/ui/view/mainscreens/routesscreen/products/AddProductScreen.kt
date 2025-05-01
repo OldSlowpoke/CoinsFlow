@@ -1,4 +1,4 @@
-package com.lifeflow.coinsflow.ui.view
+package com.lifeflow.coinsflow.ui.view.mainscreens.routesscreen.products
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -16,11 +16,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.lifeflow.coinsflow.model.Category
+import com.lifeflow.coinsflow.model.Product
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 
 @Composable
-fun AddCategoryScreen(
+fun AddProductScreen(
     vm: FireViewModel,
     backUp: () -> Unit,
 ) {
@@ -49,12 +49,12 @@ fun AddCategoryScreen(
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                id = vm.getLinkOnFirePath("categories")
-                vm.addCategory(
-                    Category(
+                id = vm.getLinkOnFirePath("products")
+                vm.addProduct(
+                    Product(
                         name = name,
                         description = description,
-                        id = id,
+                        id = id
                     ),
                     path = id
                 )

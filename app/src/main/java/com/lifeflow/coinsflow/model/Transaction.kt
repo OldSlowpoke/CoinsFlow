@@ -5,5 +5,6 @@ data class Transaction(
     val date: String = "",
     val type: String = "",
     val category: String = "",
-    val total: Double = 0.0
+    val total: Double = 0.0,
+    val check: List<Check> = listOf()
 )
