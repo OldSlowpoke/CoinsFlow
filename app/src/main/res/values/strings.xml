@@ -12,5 +12,8 @@
     <string name="add_product">AddProduct</string>
     <string name="add_categories">AddCategories</string>
     <string name="add_subcategories">AddSubCategories</string>
+    <string name="add_account">AddAccount</string>
+    <string name="add_market">AddMarket</string>
+    <string name="markets">Markets</string>
     <string name="login">Login</string>
 </resources>

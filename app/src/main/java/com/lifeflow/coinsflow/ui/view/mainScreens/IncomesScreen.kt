@@ -1,4 +1,4 @@
-package com.lifeflow.coinsflow.ui.view.mainscreens
+package com.lifeflow.coinsflow.ui.view.mainScreens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,6 +30,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -43,6 +44,10 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import com.lifeflow.coinsflow.R
+import com.lifeflow.coinsflow.model.Account
+import com.lifeflow.coinsflow.model.Category
+import com.lifeflow.coinsflow.model.Market
+import com.lifeflow.coinsflow.model.SubCategory
 import com.lifeflow.coinsflow.model.Transaction
 import com.lifeflow.coinsflow.ui.view.convertMillisToDate
 import com.lifeflow.coinsflow.viewModel.FireViewModel
@@ -53,10 +58,26 @@ fun IncomesScreen(
     backUp: () -> Unit,
     vm: FireViewModel
 ) {
-    var assets by remember { mutableStateOf("Актив") }
-    var accounts by remember { mutableStateOf("Счет") }
-    var total by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("Категория") }
+    val accounts by vm.accounts.collectAsState()
+    val markets by vm.markets.collectAsState()
+    val categories by vm.categories.collectAsState()
+    /*val categories = listOf(
+        Category(
+            name = "Зарплата",
+            subCategories = mutableListOf("Основная", "Бонусы")
+        ),
+        Category(
+            name = "Инвестиции",
+            subCategories = mutableListOf("Акции", "Облигации")
+        )
+    )*/
+
+    var accountState by remember { mutableStateOf(Account()) }
+    var marketState by remember { mutableStateOf(Market()) }
+    var categoryState by remember { mutableStateOf(Category()) }
+    var totalState by remember { mutableStateOf("") }
+    var subCategory by remember { mutableStateOf("") }
+
     var id: String
 
     val datePickerState = rememberDatePickerState()
@@ -80,33 +101,50 @@ fun IncomesScreen(
 
         HorizontalDivider()
 
-        // Поле Актив
-        IncomesAssetBox(
-            assets = assets,
-            onAssetChange = { newValue -> assets = newValue }
-        )
-        HorizontalDivider()
-
         // Поле Счет
         IncomesAccountBox(
-            accounts = accounts,
-            onAccountChange = { newValue -> accounts = newValue }
+            account = accountState,
+            onAccountChange = { newValue -> accountState = newValue },
+            accounts = accounts
+        )
+
+        HorizontalDivider()
+
+        // Поле Актив
+        IncomesMarketBox(
+            market = marketState,
+            onAssetChange = { newValue -> marketState = newValue },
+            markets = markets
+
         )
 
         HorizontalDivider()
 
         // Поле Категория
         IncomesCategoryBox(
-            category = category,
-            onCategoryChange = { newValue -> category = newValue }
+            category = categoryState,
+            onCategoryChange = { newValue -> categoryState = newValue },
+            categories = categories,
+            //subCategory = subCategory,
+            //onSubCategoryChange = { newValue -> subCategory = newValue }
+        )
+
+        // Показываем подкатегорию только если у категории есть подкатегории
+
+        HorizontalDivider()
+
+        IncomesSubCategoryBox(
+            subCategories = categoryState.subCategories,
+            selectedSubCategory = subCategory,
+            onSubCategoryChange = { newValue -> subCategory = newValue }
         )
 
         HorizontalDivider()
 
         // Поле Сумма
         IncomesTotalBox(
-            total = total,
-            onTotalChange = { newValue -> total = newValue }
+            total = totalState,
+            onTotalChange = { newValue -> totalState = newValue }
         )
 
 
@@ -119,10 +157,13 @@ fun IncomesScreen(
                 vm.addTransactions(
                     Transaction(
                         date = selectedDate,
-                        total = total.toDouble(),
+                        total = totalState.toDouble(),
                         type = "доход",
-                        category = category,
+                        account = accountState.accountName,
+                        category = categoryState.name,
+                        market = marketState.name,
                         id = id,
+                        subCategory = subCategory
                     ),
                     path = id
                 )
@@ -184,6 +225,7 @@ fun IncomesDateBox(
     datePickerState: DatePickerState,
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -230,137 +272,210 @@ fun IncomesDateBox(
 }
 
 @Composable
-fun IncomesAssetBox(
-    assets: String,
-    onAssetChange: (String) -> Unit
+fun IncomesMarketBox(
+    market: Market,
+    onAssetChange: (Market) -> Unit,
+    markets: List<Market>
 ) {
     var isActivityDropdownOpen by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { isActivityDropdownOpen = true }
             .padding(vertical = 8.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = assets,
-                modifier = Modifier.padding(8.dp)
-            )
-            Icon(
-                imageVector = ImageVector
-                    .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
-                contentDescription = null
-            )
-        }
+        TextField(
+            value = market.name,
+            onValueChange = { },
+            label = { Text("Магазин") },
+            readOnly = true,
+            trailingIcon = {
+                IconButton(onClick = { isActivityDropdownOpen = !isActivityDropdownOpen }) {
+                    Icon(
+                        imageVector = ImageVector
+                            .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
+                        contentDescription = "Выбор категории"
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+        )
         DropdownMenu(
             expanded = isActivityDropdownOpen,
             onDismissRequest = { isActivityDropdownOpen = false },
             offset = DpOffset(x = 250.dp, y = 5.dp)
         ) {
-            DropdownMenuItem(
-                text = { Text("Редактировать") },
-                onClick = {
-                    onAssetChange("Редактировать")
-                    isActivityDropdownOpen = false
-                }
-            )
+            markets.forEach { market ->
+                DropdownMenuItem(
+                    text = { Text(market.name) },
+                    onClick = {
+                        onAssetChange(market)
+                        isActivityDropdownOpen = false
+                    }
+                )
+            }
         }
     }
 }
 
 @Composable
 fun IncomesAccountBox(
-    accounts: String,
-    onAccountChange: (String) -> Unit
+    account: Account,
+    onAccountChange: (Account) -> Unit,
+    accounts: List<Account>
 ) {
     var isAccountDropdownOpen by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { isAccountDropdownOpen = true }
             .padding(vertical = 8.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = accounts,
-                modifier = Modifier.padding(8.dp)
-            )
-            Icon(
-                imageVector = ImageVector
-                    .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
-                contentDescription = null
-            )
-        }
+        TextField(
+            value = account.accountName,
+            onValueChange = { },
+            label = { Text("Счет") },
+            readOnly = true,
+            trailingIcon = {
+                IconButton(onClick = { isAccountDropdownOpen = !isAccountDropdownOpen }) {
+                    Icon(
+                        imageVector = ImageVector
+                            .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
+                        contentDescription = "Выбор категории"
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+        )
         DropdownMenu(
             expanded = isAccountDropdownOpen,
             onDismissRequest = { isAccountDropdownOpen = false },
             offset = DpOffset(x = 250.dp, y = 5.dp)
         ) {
-            DropdownMenuItem(
-                text = { Text("Редактировать") },
-                onClick = {
-                    onAccountChange("Редактировать")
-                    isAccountDropdownOpen = false
-                }
-            )
+            accounts.forEach { account ->
+                DropdownMenuItem(
+                    text = { Text(account.accountName) },
+                    onClick = {
+                        onAccountChange(account)
+                        isAccountDropdownOpen = false
+                    }
+                )
+            }
         }
     }
 }
 
 @Composable
 fun IncomesCategoryBox(
-    category: String,
-    onCategoryChange: (String) -> Unit
+    category: Category,
+    onCategoryChange: (Category) -> Unit,
+    categories: List<Category>,
+    //subCategory: String,
+    //onSubCategoryChange: (String) -> Unit
 ) {
     var isCategoryDropdownOpen by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { isCategoryDropdownOpen = true }
+            .clickable { isCategoryDropdownOpen = !isCategoryDropdownOpen }
             .padding(vertical = 8.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = category,
-                modifier = Modifier.padding(8.dp)
-            )
-            Icon(
-                imageVector = ImageVector
-                    .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
-                contentDescription = null
-            )
-        }
+        TextField(
+            value = category.name,
+            onValueChange = { },
+            label = { Text("Категория") },
+            readOnly = true,
+            trailingIcon = {
+                IconButton(onClick = { isCategoryDropdownOpen = !isCategoryDropdownOpen }) {
+                    Icon(
+                        imageVector = ImageVector
+                            .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
+                        contentDescription = "Выбор категории"
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+        )
         DropdownMenu(
             expanded = isCategoryDropdownOpen,
             onDismissRequest = { isCategoryDropdownOpen = false },
             offset = DpOffset(x = 250.dp, y = 5.dp)
         ) {
-            DropdownMenuItem(
-                text = { Text("Редактировать") },
-                onClick = {
-                    onCategoryChange("Редактировать")
-                    isCategoryDropdownOpen = false
+            categories.forEach { category ->
+                DropdownMenuItem(
+                    text = { Text(category.name) },
+                    onClick = {
+                        onCategoryChange(category)
+                        isCategoryDropdownOpen = false
+                    }
+                )
+            }
+        }
+    }
+    /*HorizontalDivider()
+
+    IncomesSubCategoryBox(
+        subCategories = category.subCategories,
+        selectedSubCategory = subCategory,
+        onSubCategoryChange = { onSubCategoryChange(subCategory) }
+    )*/
+}
+
+@Composable
+fun IncomesSubCategoryBox(
+    subCategories: MutableList<String>,
+    selectedSubCategory: String,
+    onSubCategoryChange: (String) -> Unit
+) {
+    var isSubCategoryDropdownOpen by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { isSubCategoryDropdownOpen = !isSubCategoryDropdownOpen }
+            .padding(vertical = 8.dp)
+    ) {
+        TextField(
+            value = selectedSubCategory.ifEmpty { "Выберите подкатегорию" },
+            onValueChange = { },
+            label = { Text("Подкатегория") },
+            readOnly = true,
+            trailingIcon = {
+                IconButton(onClick = { isSubCategoryDropdownOpen = !isSubCategoryDropdownOpen }) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
+                        contentDescription = "Выбор подкатегории"
+                    )
                 }
-            )
-            DropdownMenuItem(
-                text = { Text("Удалить") },
-                onClick = {
-                    onCategoryChange("Удалить")
-                    isCategoryDropdownOpen = false
-                }
-            )
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+        )
+
+        DropdownMenu(
+            expanded = isSubCategoryDropdownOpen,
+            onDismissRequest = { isSubCategoryDropdownOpen = false },
+            offset = DpOffset(x = 250.dp, y = 5.dp)
+        ) {
+            subCategories.forEach { subCategory ->
+                DropdownMenuItem(
+                    text = { Text(subCategory) },
+                    onClick = {
+                        onSubCategoryChange(subCategory)
+                        isSubCategoryDropdownOpen = false
+                    }
+                )
+            }
         }
     }
 }

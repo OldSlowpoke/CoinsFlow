@@ -1,4 +1,4 @@
-package com.lifeflow.coinsflow.model.uistate
+package com.lifeflow.coinsflow.model.uiState
 
 data class AuthUiState(
     val email: String = "",

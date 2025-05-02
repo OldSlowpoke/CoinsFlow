@@ -1,8 +1,8 @@
 package com.lifeflow.coinsflow.model
 
-data class Account(
-    val accountName: String = "",
+data class Market(
+    val name: String = "",
     val description: String = "",
-    val initialAmount: Double = 0.0,
+    val street: String = "",
     val id: String = "",
 )

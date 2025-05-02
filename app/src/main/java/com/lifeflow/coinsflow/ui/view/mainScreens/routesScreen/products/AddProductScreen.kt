@@ -1,4 +1,4 @@
-package com.lifeflow.coinsflow.ui.view.mainscreens.routesscreen.products
+package com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.products
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -30,8 +30,8 @@ fun AddProductScreen(
 
     Column(
         modifier = Modifier
-            .padding(16.dp)
             .fillMaxSize()
+            .padding(16.dp)
     ) {
         TextField(
             value = name,
@@ -48,6 +48,7 @@ fun AddProductScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(
+            modifier = Modifier.fillMaxWidth().padding(start = 4.dp, end = 4.dp, top = 16.dp),
             onClick = {
                 id = vm.getLinkOnFirePath("products")
                 vm.addProduct(

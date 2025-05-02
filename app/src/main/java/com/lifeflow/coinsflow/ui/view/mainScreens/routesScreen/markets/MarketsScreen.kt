@@ -1,9 +1,9 @@
-package com.lifeflow.coinsflow.ui.view.mainscreens.routesscreen.products
+package com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.markets
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -21,28 +21,33 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lifeflow.coinsflow.model.Product
+import com.lifeflow.coinsflow.model.Market
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 
 @Composable
-fun ProductsScreen(
+fun MarketsScreen(
     vm: FireViewModel,
-    navAddProduct: () -> Unit,
+    navAddMarket: () -> Unit,
 ) {
-    val products by vm.products.collectAsState()
+    val markets by vm.markets.collectAsState()
 
-    Column {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                navAddProduct()
-            }
+            onClick = { navAddMarket() }
         ) {
-            Text("Добавить")
+            Text("Добавить категорию транзакции")
         }
-        products.forEachIndexed { index, product ->
-            CategoryItem(product, vm)
-            if (index < products.size - 1) {
+        markets.forEachIndexed { index, market ->
+            AccountItem(
+                market = market,
+                vm = vm,
+            )
+            if (index < markets.size - 1) {
                 HorizontalDivider(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -55,18 +60,17 @@ fun ProductsScreen(
 }
 
 @Composable
-fun CategoryItem(
-    product: Product,
-    mv: FireViewModel
+fun AccountItem(
+    market: Market,
+    vm: FireViewModel,
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .clickable {}
     ) {
         Text(
-            text = product.name,
+            text = market.name,
             fontSize = 18.sp,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
@@ -76,22 +80,24 @@ fun CategoryItem(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = product.description,
+                text = market.description,
+                fontSize = 14.sp,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(6f)
+            )
+            Text(
+                text = market.street,
                 fontSize = 14.sp,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(6f)
             )
             IconButton(
-                onClick = {
-                    mv.deleteProduct(product)
-                },
+                onClick = { vm.deleteMarket(market) },
                 modifier = Modifier.weight(1f)
             ) {
-                Icon(
-                    Icons.Filled.Delete,
-                    contentDescription = "Delete"
-                )
+                Icon(Icons.Filled.Delete, contentDescription = "Удалить категорию")
             }
         }
     }

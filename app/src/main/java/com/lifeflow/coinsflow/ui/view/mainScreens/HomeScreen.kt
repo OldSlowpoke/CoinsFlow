@@ -1,4 +1,4 @@
-package com.lifeflow.coinsflow.ui.view.mainscreens
+package com.lifeflow.coinsflow.ui.view.mainScreens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background

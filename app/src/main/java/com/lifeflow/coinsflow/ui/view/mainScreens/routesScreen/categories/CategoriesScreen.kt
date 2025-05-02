@@ -1,9 +1,10 @@
-package com.lifeflow.coinsflow.ui.view.mainscreens.routesscreen.categories
+package com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,30 +24,40 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lifeflow.coinsflow.model.Category
-import com.lifeflow.coinsflow.model.SubCategory
 import com.lifeflow.coinsflow.viewModel.FireViewModel
-
 
 @Composable
 fun CategoriesScreen(
     vm: FireViewModel,
     navAddCategories: () -> Unit,
-    nadAddSubcategories: (Category) -> Unit // Теперь передаём выбранную категорию
+    navAddSubCategories: () -> Unit // Теперь передаём выбранную категорию
 ) {
     val categories by vm.categories.collectAsState()
 
-    Column {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = navAddCategories
+            onClick = { navAddCategories() },
         ) {
             Text("Добавить категорию транзакции")
+        }
+        // Кнопка добавления подкатегории
+        Button(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            onClick = { navAddSubCategories() }
+        ) {
+            Text("Добавить подкатегорию")
         }
         categories.forEachIndexed { index, category ->
             CategoryItem(
                 category = category,
                 mv = vm,
-                onAddSubcategory = { nadAddSubcategories(category) }, // Передаём текущую категорию
                 onDeleteSubcategory = { subCategory -> vm.deleteSubCategory(category, subCategory) }
             )
             if (index < categories.size - 1) {
@@ -65,7 +76,6 @@ fun CategoriesScreen(
 fun CategoryItem(
     category: Category,
     mv: FireViewModel,
-    onAddSubcategory: () -> Unit,
     onDeleteSubcategory: (String) -> Unit
 ) {
     Column(
@@ -98,24 +108,14 @@ fun CategoryItem(
             }
         }
 
-        // Кнопка добавления подкатегории
-        Button(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            onClick = onAddSubcategory
-        ) {
-            Text("Добавить подкатегорию")
-        }
-
         // Отображение подкатегорий
-        if (category.subcategories.isNotEmpty()) {
+        if (category.subCategories.isNotEmpty()) {
             Text(
                 text = "Подкатегории:",
                 modifier = Modifier.padding(top = 8.dp),
                 fontSize = 16.sp
             )
-            category.subcategories.forEach { subCategory ->
+            category.subCategories.forEach { subCategory ->
                 SubCategoryItem(
                     subCategory = subCategory,
                     onDelete = { onDeleteSubcategory(subCategory) }

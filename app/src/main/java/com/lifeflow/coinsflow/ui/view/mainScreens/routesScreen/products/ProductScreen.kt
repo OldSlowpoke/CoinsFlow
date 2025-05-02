@@ -1,4 +1,4 @@
-package com.lifeflow.coinsflow.ui.view.mainscreens.routesscreen.products
+package com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.products
 
 import androidx.compose.runtime.Composable
 

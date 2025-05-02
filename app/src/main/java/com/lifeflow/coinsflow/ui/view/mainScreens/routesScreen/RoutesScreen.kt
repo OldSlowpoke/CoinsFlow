@@ -1,4 +1,4 @@
-package com.lifeflow.coinsflow.ui.view.mainscreens.routesscreen
+package com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,9 +21,9 @@ import com.lifeflow.coinsflow.viewModel.FireViewModel
 
 @Composable
 fun RoutesScreen(
-    mv: FireViewModel,
     navOnProducts: () -> Unit,
-    navOnCategories: () -> Unit
+    navOnCategories: () -> Unit,
+    navOnMarkets: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize()
@@ -67,6 +67,30 @@ fun RoutesScreen(
             ) {
                 Text(
                     text = "Товары",
+                    modifier = Modifier.padding(8.dp)
+                )
+                Icon(
+                    imageVector = ImageVector
+                        .vectorResource(R.drawable.baseline_keyboard_arrow_right_24),
+                    contentDescription = null
+                )
+            }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    navOnMarkets()
+                }
+                .padding(8.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = "Магазины",
                     modifier = Modifier.padding(8.dp)
                 )
                 Icon(

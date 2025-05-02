@@ -1,4 +1,4 @@
-package com.lifeflow.coinsflow.ui.view
+package com.lifeflow.coinsflow.ui.view.statisticsScreens
 
 import androidx.compose.runtime.Composable
 

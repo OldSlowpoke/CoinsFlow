@@ -6,9 +6,10 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import com.lifeflow.coinsflow.model.Account
 import com.lifeflow.coinsflow.model.Category
+import com.lifeflow.coinsflow.model.Market
 import com.lifeflow.coinsflow.model.Product
-import com.lifeflow.coinsflow.model.SubCategory
 import com.lifeflow.coinsflow.model.Transaction
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -24,16 +25,22 @@ class FireRepository @Inject constructor(
     private var transactionListener: ListenerRegistration? = null
     private var productListener: ListenerRegistration? = null
     private var categoryListener: ListenerRegistration? = null
+    private var accountsListener: ListenerRegistration? = null
+    private var marketsListener: ListenerRegistration? = null
 
     // Метод для остановки всех слушателей
     fun stopAllListeners() {
         transactionListener?.remove()
         productListener?.remove()
         categoryListener?.remove()
+        accountsListener?.remove()
+        marketsListener?.remove()
 
         transactionListener = null
         productListener = null
         categoryListener = null
+        accountsListener = null
+        marketsListener = null
     }
 
     //Transactions
@@ -154,7 +161,7 @@ class FireRepository @Inject constructor(
                 .document(currentUserId())
                 .collection("categories")
                 .document(category.id)
-                .update("subcategories", FieldValue.arrayUnion(subCategory))
+                .update("subCategories", FieldValue.arrayUnion(subCategory))
                 .await()
         } catch (e: Exception) {
             // Обработка ошибок (например, логирование)
@@ -170,7 +177,7 @@ class FireRepository @Inject constructor(
                 .document(currentUserId())
                 .collection("categories")
                 .document(category.id)
-                .update("subcategories", FieldValue.arrayRemove(subCategory))
+                .update("subCategories", FieldValue.arrayRemove(subCategory))
                 .await()
         } catch (e: Exception) {
             // Логируем ошибку
@@ -235,7 +242,83 @@ class FireRepository @Inject constructor(
         firebaseAuth.signOut()
     }
 
+    //Accounts
+    fun getAccounts(): Flow<List<Account>> = callbackFlow {
+        val snapshotListener = firestore
+            .collection("users")
+            .document(currentUserId())
+            .collection("accounts")
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    close(e)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null && !snapshot.isEmpty) {
+                    val accounts = snapshot.toObjects(Account::class.java)
+                    trySend(accounts)
+                }
+            }
+        awaitClose { accountsListener?.remove() }
+    }
 
+    suspend fun addAccount(account: Account, idAccount: String) {
+        firestore
+            .collection("users")
+            .document(currentUserId())
+            .collection("accounts")
+            .document(idAccount)
+            .set(account)
+            .await()
+    }
+
+    suspend fun deleteAccount(account: Account) {
+        firestore
+            .collection("users")
+            .document(currentUserId())
+            .collection("accounts")
+            .document(account.id)
+            .delete()
+            .await()
+    }
+
+    //Markets
+    fun getMarkets(): Flow<List<Market>> = callbackFlow {
+        val snapshotListener = firestore
+            .collection("users")
+            .document(currentUserId())
+            .collection("markets")
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    close(e)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null && !snapshot.isEmpty) {
+                    val markets = snapshot.toObjects(Market::class.java)
+                    trySend(markets)
+                }
+            }
+        awaitClose { marketsListener?.remove() }
+    }
+
+    suspend fun addMarket(market: Market, id: String) {
+        firestore
+            .collection("users")
+            .document(currentUserId())
+            .collection("markets")
+            .document(id)
+            .set(market)
+            .await()
+    }
+
+    suspend fun deleteMarket(market: Market) {
+        firestore
+            .collection("users")
+            .document(currentUserId())
+            .collection("markets")
+            .document(market.id)
+            .delete()
+            .await()
+    }
 }
 
 

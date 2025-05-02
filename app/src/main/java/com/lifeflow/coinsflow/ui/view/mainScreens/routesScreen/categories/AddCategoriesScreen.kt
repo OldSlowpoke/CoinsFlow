@@ -1,4 +1,4 @@
-package com.lifeflow.coinsflow.ui.view.mainscreens.routesscreen.categories
+package com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -30,8 +30,8 @@ fun AddCategoryScreen(
 
     Column(
         modifier = Modifier
-            .padding(16.dp)
             .fillMaxSize()
+            .padding(16.dp)
     ) {
         TextField(
             value = name,
@@ -48,6 +48,7 @@ fun AddCategoryScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(
+            modifier = Modifier.fillMaxWidth().padding(start = 4.dp, end = 4.dp),
             onClick = {
                 id = vm.getLinkOnFirePath("categories")
                 vm.addCategory(

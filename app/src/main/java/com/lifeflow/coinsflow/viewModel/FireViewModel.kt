@@ -2,12 +2,13 @@ package com.lifeflow.coinsflow.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lifeflow.coinsflow.model.Account
 import com.lifeflow.coinsflow.model.Category
+import com.lifeflow.coinsflow.model.Market
 import com.lifeflow.coinsflow.model.Product
-import com.lifeflow.coinsflow.model.SubCategory
 import com.lifeflow.coinsflow.model.Transaction
 import com.lifeflow.coinsflow.model.repository.FireRepository
-import com.lifeflow.coinsflow.model.uistate.AuthUiState
+import com.lifeflow.coinsflow.model.uiState.AuthUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +29,10 @@ class FireViewModel @Inject constructor(
         fireRepository.getCategories().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val products =
         fireRepository.getProducts().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    val accounts =
+        fireRepository.getAccounts().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    val markets =
+        fireRepository.getMarkets().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState
@@ -126,6 +131,25 @@ class FireViewModel @Inject constructor(
             AuthUiState(isAuthenticated = false)
         }
         viewModelScope.coroutineContext.cancelChildren() // Отмена всех корутин
+    }
+
+    //Accounts
+    fun addAccount(account: Account, path: String) = viewModelScope.launch {
+        fireRepository.addAccount(account, path)
+    }
+
+    fun deleteAccount(account: Account) = viewModelScope.launch {
+        fireRepository.deleteAccount(account)
+
+    }
+
+    //Markets
+    fun addMarket(market: Market, path: String) = viewModelScope.launch {
+        fireRepository.addMarket(market, path)
+    }
+
+    fun deleteMarket(market: Market) = viewModelScope.launch {
+        fireRepository.deleteMarket(market)
     }
 }
 
