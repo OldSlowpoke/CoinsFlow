@@ -27,7 +27,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,6 +42,11 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import com.lifeflow.coinsflow.R
+import com.lifeflow.coinsflow.model.Account
+import com.lifeflow.coinsflow.model.ExpenseCategories
+import com.lifeflow.coinsflow.model.Check
+import com.lifeflow.coinsflow.model.Market
+import com.lifeflow.coinsflow.model.Transaction
 import com.lifeflow.coinsflow.ui.view.convertMillisToDate
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 
@@ -48,12 +55,23 @@ import com.lifeflow.coinsflow.viewModel.FireViewModel
 @Composable
 fun ExpensesScreen(
     backUp: () -> Unit,
-    mv: FireViewModel
+    vm: FireViewModel,
+    navOnCheckScreen: () -> Unit
 ) {
-    var assets by remember { mutableStateOf("Актив") }
-    var accounts by remember { mutableStateOf("Счет") }
-    var total by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("Категория") }
+    val accounts by vm.accounts.collectAsState()
+    val markets by vm.markets.collectAsState()
+    val categories by vm.expenseCategories.collectAsState()
+    val checkItems by vm.checkItems.collectAsState()
+
+    var accountState by remember { mutableStateOf(Account()) }
+    var marketState by remember { mutableStateOf(Market()) }
+    var categoryState by remember { mutableStateOf(ExpenseCategories()) }
+    var totalState by remember { mutableStateOf("") }
+    var subCategory by remember { mutableStateOf("") }
+    /*var checkItems by remember {
+        mutableStateOf<List<Check>>(mutableListOf())
+    }*/
+
     var id: String
 
     val datePickerState = rememberDatePickerState()
@@ -67,80 +85,87 @@ fun ExpensesScreen(
             .padding(16.dp)
     ) {
         // Поле Дата
-        ExpenseDateBox(
+        ExpensesDateBox(
             datePickerState = datePickerState,
             selectedDate = selectedDate,
+        )
+
+        HorizontalDivider(
+            modifier = Modifier.padding(top = 8.dp)
+        )
+
+        // Поле Счет
+        ExpensesAccountBox(
+            account = accountState,
+            onAccountChange = { newValue -> accountState = newValue },
+            accounts = accounts
         )
 
         HorizontalDivider()
 
         // Поле Актив
-        ExpenseAssetBox(
-            assets = assets,
-            onAssetChange = { newValue -> assets = newValue }
-        )
-        HorizontalDivider()
+        ExpensesMarketBox(
+            market = marketState,
+            onAssetChange = { newValue -> marketState = newValue },
+            markets = markets
 
-        // Поле Счет
-        ExpenseAccountBox(
-            accounts = accounts,
-            onAccountChange = { newValue -> accounts = newValue }
         )
 
         HorizontalDivider()
 
         // Поле Категория
-        ExpenseCategoryBox(
-            category = category,
-            onCategoryChange = { newValue -> category = newValue }
+        ExpensesCategoryBox(
+            category = categoryState,
+            onCategoryChange = { newValue -> categoryState = newValue },
+            categories = categories,
         )
+
+        // Показываем подкатегорию только если у категории есть подкатегории
+
+        HorizontalDivider()
+
+        ExpensesSubCategoryBox(
+            subCategories = categoryState.subExpenseCategories,
+            selectedSubCategory = subCategory,
+            onSubCategoryChange = { newValue -> subCategory = newValue }
+        )
+
         HorizontalDivider()
 
         // Поле Чек
-        ExpenseChequeBox(
-            onCheckRout = {}
+        ExpenseCheckBox(
+            navOnCheckScreen = {navOnCheckScreen()},
+            checkItems = checkItems
         )
 
         HorizontalDivider()
 
         // Поле Сумма
-        ExpenseTotalBox(
-            total = total,
-            onTotalChange = { newValue -> total = newValue }
+        ExpensesTotalBox(
+            total = totalState,
+            onTotalChange = { newValue -> totalState = newValue }
         )
-
 
         HorizontalDivider()
 
         // Кнопка Сохранить
         Button(
             onClick = {
-                id = mv.getLinkOnFirePath("transactions")
-                mv.addTransactions(
-                    com.lifeflow.coinsflow.model.Transaction(
+                id = vm.getLinkOnFirePath("transactions")
+                vm.addTransactions(
+                    Transaction(
                         date = selectedDate,
-                        total = total.toDouble(),
-                        type = "расход",
-                        category = category,
+                        total = totalState.toDouble(),
+                        type = "expense",
+                        account = accountState.accountName,
+                        category = categoryState.name,
+                        market = marketState.name,
                         id = id,
+                        subCategory = subCategory
                     ),
                     path = id
                 )
                 backUp()
-                /*.isCompleted.let { answer ->
-                    when (answer) {
-                        true -> {
-                            scope.launch {
-                                snackBarHostState.showSnackbar("Транзакция удалена")
-                            }
-                        }
-                        false -> {
-                            scope.launch {
-                                snackBarHostState.showSnackbar("Транзакция не удалена")
-                            }
-                        }
-                    }
-                }*/
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -152,12 +177,12 @@ fun ExpensesScreen(
 }
 
 @Composable
-fun ExpenseTotalBox(
+fun ExpensesTotalBox(
     total: String,
     onTotalChange: (String) -> Unit
 ) {
     OutlinedTextField(
-        value = total,
+        value = total.ifEmpty { "Введите сумму" },
         onValueChange = { newValue ->
             if (
                 newValue.isBlank() || newValue
@@ -177,46 +202,19 @@ fun ExpenseTotalBox(
     )
 }
 
-@Composable
-fun ExpenseChequeBox(
-    onCheckRout: (String) -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {}
-            .padding(vertical = 8.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = "Чек",
-                modifier = Modifier.padding(8.dp)
-            )
-            Icon(
-                imageVector = ImageVector
-                    .vectorResource(R.drawable.baseline_keyboard_arrow_right_24),
-                contentDescription = null
-            )
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExpenseDateBox(
+fun ExpensesDateBox(
     selectedDate: String,
     datePickerState: DatePickerState,
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier.fillMaxWidth()
     ) {
-        OutlinedTextField(
-            value = selectedDate,
+        TextField(
+            value = selectedDate.ifEmpty { "Выберите дату" },
             onValueChange = { },
             label = { Text("Дата") },
             readOnly = true,
@@ -258,101 +256,216 @@ fun ExpenseDateBox(
 }
 
 @Composable
-fun ExpenseAssetBox(
-    assets: String,
-    onAssetChange: (String) -> Unit
+fun ExpensesMarketBox(
+    market: Market,
+    onAssetChange: (Market) -> Unit,
+    markets: List<Market>
 ) {
     var isActivityDropdownOpen by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { isActivityDropdownOpen = true }
             .padding(vertical = 8.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = assets,
-                modifier = Modifier.padding(8.dp)
-            )
-            Icon(
-                imageVector = ImageVector
-                    .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
-                contentDescription = null
-            )
-        }
+        TextField(
+            value = market.name.ifEmpty { "Выберите магазин" },
+            onValueChange = { },
+            label = { Text("Магазин") },
+            readOnly = true,
+            trailingIcon = {
+                IconButton(onClick = { isActivityDropdownOpen = !isActivityDropdownOpen }) {
+                    Icon(
+                        imageVector = ImageVector
+                            .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
+                        contentDescription = "Выбор категории"
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+        )
         DropdownMenu(
             expanded = isActivityDropdownOpen,
             onDismissRequest = { isActivityDropdownOpen = false },
             offset = DpOffset(x = 250.dp, y = 5.dp)
         ) {
-            DropdownMenuItem(
-                text = { Text("Редактировать") },
-                onClick = {
-                    onAssetChange("Редактировать")
-                    isActivityDropdownOpen = false
-                }
-            )
+            markets.forEach { market ->
+                DropdownMenuItem(
+                    text = { Text(market.name) },
+                    onClick = {
+                        onAssetChange(market)
+                        isActivityDropdownOpen = false
+                    }
+                )
+            }
         }
     }
 }
 
 @Composable
-fun ExpenseAccountBox(
-    accounts: String,
-    onAccountChange: (String) -> Unit
+fun ExpensesAccountBox(
+    account: Account,
+    onAccountChange: (Account) -> Unit,
+    accounts: List<Account>
 ) {
     var isAccountDropdownOpen by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { isAccountDropdownOpen = true }
             .padding(vertical = 8.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = accounts,
-                modifier = Modifier.padding(8.dp)
-            )
-            Icon(
-                imageVector = ImageVector
-                    .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
-                contentDescription = null
-            )
-        }
+        TextField(
+            value = account.accountName.ifEmpty { "Выберите счет" },
+            onValueChange = { },
+            label = { Text("Счет") },
+            readOnly = true,
+            trailingIcon = {
+                IconButton(onClick = { isAccountDropdownOpen = !isAccountDropdownOpen }) {
+                    Icon(
+                        imageVector = ImageVector
+                            .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
+                        contentDescription = "Выбор категории"
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+        )
         DropdownMenu(
             expanded = isAccountDropdownOpen,
             onDismissRequest = { isAccountDropdownOpen = false },
             offset = DpOffset(x = 250.dp, y = 5.dp)
         ) {
-            DropdownMenuItem(
-                text = { Text("Редактировать") },
-                onClick = {
-                    onAccountChange("Редактировать")
-                    isAccountDropdownOpen = false
-                }
-            )
+            accounts.forEach { account ->
+                DropdownMenuItem(
+                    text = { Text(account.accountName) },
+                    onClick = {
+                        onAccountChange(account)
+                        isAccountDropdownOpen = false
+                    }
+                )
+            }
         }
     }
 }
 
 @Composable
-fun ExpenseCategoryBox(
-    category: String,
-    onCategoryChange: (String) -> Unit
+fun ExpensesCategoryBox(
+    category: ExpenseCategories,
+    onCategoryChange: (ExpenseCategories) -> Unit,
+    categories: List<ExpenseCategories>,
 ) {
     var isCategoryDropdownOpen by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { isCategoryDropdownOpen = true }
+            .clickable { isCategoryDropdownOpen = !isCategoryDropdownOpen }
+            .padding(vertical = 8.dp)
+    ) {
+        TextField(
+            value = category.name.ifEmpty { "Выберите категорию" },
+            onValueChange = { },
+            label = { Text("Категория") },
+            readOnly = true,
+            trailingIcon = {
+                IconButton(onClick = { isCategoryDropdownOpen = !isCategoryDropdownOpen }) {
+                    Icon(
+                        imageVector = ImageVector
+                            .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
+                        contentDescription = "Выбор категории"
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+        )
+        DropdownMenu(
+            expanded = isCategoryDropdownOpen,
+            onDismissRequest = { isCategoryDropdownOpen = false },
+            offset = DpOffset(x = 250.dp, y = 5.dp)
+        ) {
+            categories.forEach { category ->
+                DropdownMenuItem(
+                    text = { Text(category.name) },
+                    onClick = {
+                        onCategoryChange(category)
+                        isCategoryDropdownOpen = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ExpensesSubCategoryBox(
+    subCategories: MutableList<String>,
+    selectedSubCategory: String,
+    onSubCategoryChange: (String) -> Unit
+) {
+    var isSubCategoryDropdownOpen by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { isSubCategoryDropdownOpen = !isSubCategoryDropdownOpen }
+            .padding(vertical = 8.dp)
+    ) {
+        TextField(
+            value = selectedSubCategory.ifEmpty { "Выберите подкатегорию" },
+            onValueChange = { },
+            label = { Text("Подкатегория") },
+            readOnly = true,
+            trailingIcon = {
+                IconButton(onClick = { isSubCategoryDropdownOpen = !isSubCategoryDropdownOpen }) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
+                        contentDescription = "Выбор подкатегории"
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+        )
+
+        DropdownMenu(
+            expanded = isSubCategoryDropdownOpen,
+            onDismissRequest = { isSubCategoryDropdownOpen = false },
+            offset = DpOffset(x = 250.dp, y = 5.dp)
+        ) {
+            subCategories.forEach { subCategory ->
+                DropdownMenuItem(
+                    text = { Text(subCategory) },
+                    onClick = {
+                        onSubCategoryChange(subCategory)
+                        isSubCategoryDropdownOpen = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ExpenseCheckBox(
+    navOnCheckScreen: (MutableList<Check>) -> Unit,
+    checkItems: MutableList<Check>
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                navOnCheckScreen(checkItems)
+            }
             .padding(vertical = 8.dp)
     ) {
         Row(
@@ -361,33 +474,13 @@ fun ExpenseCategoryBox(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = category,
+                text = "Чек",
                 modifier = Modifier.padding(8.dp)
             )
             Icon(
                 imageVector = ImageVector
-                    .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
+                    .vectorResource(R.drawable.baseline_keyboard_arrow_right_24),
                 contentDescription = null
-            )
-        }
-        DropdownMenu(
-            expanded = isCategoryDropdownOpen,
-            onDismissRequest = { isCategoryDropdownOpen = false },
-            offset = DpOffset(x = 250.dp, y = 5.dp)
-        ) {
-            DropdownMenuItem(
-                text = { Text("Редактировать") },
-                onClick = {
-                    onCategoryChange("Редактировать")
-                    isCategoryDropdownOpen = false
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Удалить") },
-                onClick = {
-                    onCategoryChange("Удалить")
-                    isCategoryDropdownOpen = false
-                }
             )
         }
     }

@@ -1,6 +1,5 @@
 package com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.products
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,7 +27,7 @@ import com.lifeflow.coinsflow.viewModel.FireViewModel
 @Composable
 fun ProductsScreen(
     vm: FireViewModel,
-    navAddProduct: () -> Unit,
+    navAddProductScreen: () -> Unit,
 ) {
     val products by vm.products.collectAsState()
 
@@ -40,7 +39,7 @@ fun ProductsScreen(
         Button(
             modifier = Modifier.fillMaxWidth(),
             onClick = {
-                navAddProduct()
+                navAddProductScreen()
             }
         ) {
             Text("Добавить")

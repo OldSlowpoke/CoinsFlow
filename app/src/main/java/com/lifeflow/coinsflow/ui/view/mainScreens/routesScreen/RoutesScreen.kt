@@ -17,13 +17,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.lifeflow.coinsflow.R
-import com.lifeflow.coinsflow.viewModel.FireViewModel
 
 @Composable
 fun RoutesScreen(
-    navOnProducts: () -> Unit,
-    navOnCategories: () -> Unit,
-    navOnMarkets: () -> Unit
+    navOnProductsScreen: () -> Unit,
+    navOnExpenseCategoriesScreen: () -> Unit,
+    navOnIncomeCategoriesScreen: () -> Unit,
+    navOnMarketsScreen: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize()
@@ -32,7 +32,7 @@ fun RoutesScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    navOnCategories()
+                    navOnExpenseCategoriesScreen()
                 }
                 .padding(8.dp)
         ) {
@@ -42,7 +42,7 @@ fun RoutesScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "Категории",
+                    text = "Категории расходов",
                     modifier = Modifier.padding(8.dp)
                 )
                 Icon(
@@ -56,7 +56,31 @@ fun RoutesScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    navOnProducts()
+                    navOnIncomeCategoriesScreen()
+                }
+                .padding(8.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Категории доходов",
+                    modifier = Modifier.padding(8.dp)
+                )
+                Icon(
+                    imageVector = ImageVector
+                        .vectorResource(R.drawable.baseline_keyboard_arrow_right_24),
+                    contentDescription = null
+                )
+            }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    navOnProductsScreen()
                 }
                 .padding(8.dp)
         ) {
@@ -80,7 +104,7 @@ fun RoutesScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    navOnMarkets()
+                    navOnMarketsScreen()
                 }
                 .padding(8.dp)
         ) {

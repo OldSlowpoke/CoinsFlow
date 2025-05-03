@@ -35,10 +35,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.lifeflow.coinsflow.ui.theme.CoinsFlowTheme
-import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories.AddCategoryScreen
+import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories.expense.AddExpenseCategoryScreen
 import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.products.AddProductScreen
 import com.lifeflow.coinsflow.ui.view.AuthScreen
-import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories.CategoriesScreen
+import com.lifeflow.coinsflow.ui.view.mainScreens.CheckScreen
+import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories.expense.ExpenseCategoriesScreen
 import com.lifeflow.coinsflow.ui.view.mainScreens.ExpensesScreen
 import com.lifeflow.coinsflow.ui.view.mainScreens.HomeScreen
 import com.lifeflow.coinsflow.ui.view.mainScreens.IncomesScreen
@@ -47,7 +48,10 @@ import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.products.Products
 import com.lifeflow.coinsflow.ui.view.profileScreens.ProfileScreen
 import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.RoutesScreen
 import com.lifeflow.coinsflow.ui.view.statisticsScreens.StatisticsScreen
-import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories.AddSubCategoryScreen
+import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories.expense.AddSubExpenseCategoryScreen
+import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories.incomes.AddIncomesCategoryScreen
+import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories.incomes.AddSubIncomesCategoriesCategoryScreen
+import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories.incomes.IncomesCategoriesScreen
 import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.markets.AddMarketsScreen
 import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.markets.MarketsScreen
 import com.lifeflow.coinsflow.ui.view.profileScreens.AddAccountScreen
@@ -156,7 +160,7 @@ fun MainScreen() {
                     navOnLogout = {
                         navController.navigate(NavRoutes.Login.name)
                     },
-                    navAddAccount = {
+                    navAddAccountScreen = {
                         navController.navigate(NavRoutes.AddAccount.name)
                     }
                 )
@@ -164,7 +168,10 @@ fun MainScreen() {
             composable(NavRoutes.Expenses.name) {
                 ExpensesScreen(
                     backUp = { navController.popBackStack() },
-                    vm
+                    vm,
+                    navOnCheckScreen = {
+                        navController.navigate(NavRoutes.Check.name)
+                    }
                 )
             }
             composable(NavRoutes.Incomes.name) {
@@ -175,13 +182,16 @@ fun MainScreen() {
             }
             composable(NavRoutes.Routes.name) {
                 RoutesScreen(
-                    navOnProducts = {
+                    navOnProductsScreen = {
                         navController.navigate(NavRoutes.Products.name)
                     },
-                    navOnCategories = {
-                        navController.navigate(NavRoutes.Categories.name)
+                    navOnExpenseCategoriesScreen = {
+                        navController.navigate(NavRoutes.ExpenseCategories.name)
                     },
-                    navOnMarkets = {
+                    navOnIncomeCategoriesScreen = {
+                        navController.navigate(NavRoutes.IncomesCategories.name)
+                    },
+                    navOnMarketsScreen = {
                         navController.navigate(NavRoutes.Markets.name)
                     }
                 )
@@ -189,22 +199,15 @@ fun MainScreen() {
             composable(NavRoutes.Products.name) {
                 ProductsScreen(
                     vm,
-                    navAddProduct = {
+                    navAddProductScreen = {
                         navController.navigate(NavRoutes.AddProduct.name)
                     }
                 )
             }
             composable(NavRoutes.Product.name) { ProductScreen() }
-            composable(NavRoutes.Check.name) {}
-            composable(NavRoutes.Categories.name) {
-                CategoriesScreen(
+            composable(NavRoutes.Check.name) {
+                CheckScreen(
                     vm,
-                    navAddCategories = {
-                        navController.navigate(NavRoutes.AddCategory.name)
-                    },
-                    navAddSubCategories = {
-                        navController.navigate(NavRoutes.AddSubcategory.name)
-                    }
                 )
             }
             composable(NavRoutes.AddProduct.name) {
@@ -212,8 +215,19 @@ fun MainScreen() {
                     vm,
                     backUp = { navController.popBackStack() })
             }
-            composable(NavRoutes.AddCategory.name) {
-                AddCategoryScreen(
+            composable(NavRoutes.ExpenseCategories.name) {
+                ExpenseCategoriesScreen(
+                    vm,
+                    navAddCategoriesScreen = {
+                        navController.navigate(NavRoutes.AddExpenseCategory.name)
+                    },
+                    navAddSubCategoriesScreen = {
+                        navController.navigate(NavRoutes.AddSubExpenseCategory.name)
+                    }
+                )
+            }
+            composable(NavRoutes.AddExpenseCategory.name) {
+                AddExpenseCategoryScreen(
                     vm,
                     backUp = { navController.popBackStack() })
             }
@@ -225,8 +239,8 @@ fun MainScreen() {
                     }
                 )
             }
-            composable(NavRoutes.AddSubcategory.name) {
-                AddSubCategoryScreen(
+            composable(NavRoutes.AddSubExpenseCategory.name) {
+                AddSubExpenseCategoryScreen(
                     vm,
                     backUp = { navController.popBackStack() }
                 )
@@ -250,6 +264,27 @@ fun MainScreen() {
                     vm,
                     backUp = { navController.popBackStack() }
                 )
+            }
+            composable(NavRoutes.IncomesCategories.name) {
+                IncomesCategoriesScreen(
+                    vm,
+                    navAddIncomesCategoriesScreen = {
+                        navController.navigate(NavRoutes.AddIncomesCategory.name)
+                    },
+                    navAddSubIncomesCategoriesScreen = {
+                        navController.navigate(NavRoutes.AddSubIncomesCategory.name)
+                    }
+                )
+            }
+            composable(NavRoutes.AddIncomesCategory.name) {
+                AddIncomesCategoryScreen(
+                    vm,
+                    backUp = { navController.popBackStack() })
+            }
+            composable(NavRoutes.AddSubIncomesCategory.name) {
+                AddSubIncomesCategoriesCategoryScreen(
+                    vm,
+                    backUp = { navController.popBackStack() })
             }
         }
     }
@@ -355,10 +390,13 @@ enum class NavRoutes(@StringRes val route: Int) {
     Routes(route = R.string.routes),
     Products(route = R.string.products),
     Product(route = R.string.product),
-    Categories(route = R.string.categories),
+    IncomesCategories(route = R.string.incomes_categories),
+    AddIncomesCategory(route = R.string.add_incomes_categories),
+    AddSubIncomesCategory(route = R.string.add_sub_incomes_categories),
     AddProduct(route = R.string.add_product),
-    AddCategory(route = R.string.add_categories),
-    AddSubcategory(route = R.string.add_subcategories),
+    ExpenseCategories(route = R.string.expense_categories),
+    AddExpenseCategory(route = R.string.add_expense_categories),
+    AddSubExpenseCategory(route = R.string.add_sub_expense_categories),
     AddAccount(route = R.string.add_account),
     Login(route = R.string.login),
     Markets(route = R.string.markets),

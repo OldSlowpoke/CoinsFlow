@@ -1,6 +1,5 @@
 package com.lifeflow.coinsflow.ui.view.profileScreens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,7 +27,7 @@ import com.lifeflow.coinsflow.viewModel.FireViewModel
 @Composable
 fun ProfileScreen(
     vm: FireViewModel,
-    navAddAccount: () -> Unit,
+    navAddAccountScreen: () -> Unit,
     navOnLogout: () -> Unit
 ) {
     val accounts by vm.accounts.collectAsState()
@@ -49,7 +48,7 @@ fun ProfileScreen(
         }
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { navAddAccount() }
+            onClick = { navAddAccountScreen() }
         ) {
             Text("Добавить категорию транзакции")
         }

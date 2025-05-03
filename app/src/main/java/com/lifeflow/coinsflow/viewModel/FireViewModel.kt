@@ -3,7 +3,9 @@ package com.lifeflow.coinsflow.viewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lifeflow.coinsflow.model.Account
-import com.lifeflow.coinsflow.model.Category
+import com.lifeflow.coinsflow.model.ExpenseCategories
+import com.lifeflow.coinsflow.model.Check
+import com.lifeflow.coinsflow.model.IncomesCategories
 import com.lifeflow.coinsflow.model.Market
 import com.lifeflow.coinsflow.model.Product
 import com.lifeflow.coinsflow.model.Transaction
@@ -25,8 +27,11 @@ class FireViewModel @Inject constructor(
 ) : ViewModel() {
     val transactions =
         fireRepository.getTransactions().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-    val categories =
-        fireRepository.getCategories().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    val expenseCategories =
+        fireRepository.getExpenseCategories()
+            .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    val incomesCategories = fireRepository.getIncomesCategories()
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val products =
         fireRepository.getProducts().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val accounts =
@@ -36,6 +41,30 @@ class FireViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState
+
+    // Инициализируем список
+    private val _checkItems = MutableStateFlow<MutableList<Check>>(mutableListOf())
+    val checkItems: StateFlow<MutableList<Check>> = _checkItems
+
+    // Метод для добавления элемента
+    fun addItem(item: Check) {
+        _checkItems.value = _checkItems.value.toMutableList().apply {
+            add(item)
+        }
+    }
+
+    // Метод для обновления элемента по индексу
+    fun updateItem(index: Int, newName: String) {
+        val updatedList = _checkItems.value.toMutableList().apply {
+            this[index] = this[index].copy(productName = newName)
+        }
+        _checkItems.value = updatedList
+    }
+
+    // Метод для очистки списка
+    fun clearCheckItems() {
+        _checkItems.value = mutableListOf()
+    }
 
     init {
         checkCurrentUser()
@@ -98,22 +127,40 @@ class FireViewModel @Inject constructor(
 
     fun getLinkOnFirePath(path: String) = fireRepository.getLinkOnFirePath(path)
 
-    //Categories
-    fun addCategory(category: Category, path: String) = viewModelScope.launch {
-        fireRepository.addCategory(category, path)
+    //ExpenseCategories
+    fun addExpenseCategory(expenseCategories: ExpenseCategories, path: String) = viewModelScope.launch {
+        fireRepository.addExpenseCategory(expenseCategories, path)
     }
 
-    fun deleteCategories(category: Category) = viewModelScope.launch {
-        fireRepository.deleteCategory(category)
+    fun deleteExpenseCategories(expenseCategories: ExpenseCategories) = viewModelScope.launch {
+        fireRepository.deleteExpenseCategory(expenseCategories)
+    }
+
+    //SubExpenseCategories
+    fun addSubExpenseCategory(expenseCategories: ExpenseCategories, subCategory: String) = viewModelScope.launch {
+        fireRepository.addSubExpenseCategory(expenseCategories, subCategory)
+    }
+
+    fun deleteSubExpenseCategory(expenseCategories: ExpenseCategories, subCategory: String) = viewModelScope.launch {
+        fireRepository.deleteSubExpenseCategory(expenseCategories, subCategory)
+    }
+
+    //IncomesCategories
+    fun addIncomesCategory(category: IncomesCategories, path: String) = viewModelScope.launch {
+        fireRepository.addIncomesCategory(category, path)
+    }
+
+    fun deleteIncomesCategories(category: IncomesCategories) = viewModelScope.launch {
+        fireRepository.deleteIncomesCategory(category)
     }
 
     //SubCategories
-    fun addSubCategory(category: Category, subCategory: String) = viewModelScope.launch {
-        fireRepository.addSubCategory(category, subCategory)
+    fun addSubIncomesCategory(category: IncomesCategories, subCategory: String) = viewModelScope.launch {
+        fireRepository.addSubIncomesCategory(category, subCategory)
     }
 
-    fun deleteSubCategory(category: Category, subCategory: String) = viewModelScope.launch {
-        fireRepository.deleteSubCategory(category, subCategory)
+    fun deleteSubIncomesCategory(category: IncomesCategories, subCategory: String) = viewModelScope.launch {
+        fireRepository.deleteSubIncomesCategory(category, subCategory)
     }
 
     //Products

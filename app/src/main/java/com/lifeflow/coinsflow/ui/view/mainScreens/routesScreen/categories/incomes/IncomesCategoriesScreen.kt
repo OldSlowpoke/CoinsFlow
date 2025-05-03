@@ -1,4 +1,4 @@
-package com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories
+package com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories.incomes
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,16 +23,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lifeflow.coinsflow.model.Category
+import com.lifeflow.coinsflow.model.IncomesCategories
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 
 @Composable
-fun CategoriesScreen(
+fun IncomesCategoriesScreen(
     vm: FireViewModel,
-    navAddCategories: () -> Unit,
-    navAddSubCategories: () -> Unit // Теперь передаём выбранную категорию
+    navAddIncomesCategoriesScreen: () -> Unit,
+    navAddSubIncomesCategoriesScreen: () -> Unit // Теперь передаём выбранную категорию
 ) {
-    val categories by vm.categories.collectAsState()
+    val incomeCategories by vm.incomesCategories.collectAsState()
 
     Column(
         modifier = Modifier
@@ -41,26 +41,26 @@ fun CategoriesScreen(
     ) {
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { navAddCategories() },
+            onClick = { navAddIncomesCategoriesScreen() },
         ) {
-            Text("Добавить категорию транзакции")
+            Text("Добавить категорию доходов")
         }
         // Кнопка добавления подкатегории
         Button(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 8.dp),
-            onClick = { navAddSubCategories() }
+            onClick = { navAddSubIncomesCategoriesScreen() }
         ) {
             Text("Добавить подкатегорию")
         }
-        categories.forEachIndexed { index, category ->
+        incomeCategories.forEachIndexed { index, category ->
             CategoryItem(
                 category = category,
                 mv = vm,
-                onDeleteSubcategory = { subCategory -> vm.deleteSubCategory(category, subCategory) }
+                onDeleteSubcategory = { subCategory -> vm.deleteSubIncomesCategory(category, subCategory) }
             )
-            if (index < categories.size - 1) {
+            if (index < incomeCategories.size - 1) {
                 HorizontalDivider(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -74,7 +74,7 @@ fun CategoriesScreen(
 
 @Composable
 fun CategoryItem(
-    category: Category,
+    category: IncomesCategories,
     mv: FireViewModel,
     onDeleteSubcategory: (String) -> Unit
 ) {
@@ -101,7 +101,7 @@ fun CategoryItem(
                 modifier = Modifier.weight(6f)
             )
             IconButton(
-                onClick = { mv.deleteCategories(category) },
+                onClick = { mv.deleteIncomesCategories(category) },
                 modifier = Modifier.weight(1f)
             ) {
                 Icon(Icons.Filled.Delete, contentDescription = "Удалить категорию")
@@ -109,13 +109,13 @@ fun CategoryItem(
         }
 
         // Отображение подкатегорий
-        if (category.subCategories.isNotEmpty()) {
+        if (category.subIncomesCategories.isNotEmpty()) {
             Text(
                 text = "Подкатегории:",
                 modifier = Modifier.padding(top = 8.dp),
                 fontSize = 16.sp
             )
-            category.subCategories.forEach { subCategory ->
+            category.subIncomesCategories.forEach { subCategory ->
                 SubCategoryItem(
                     subCategory = subCategory,
                     onDelete = { onDeleteSubcategory(subCategory) }

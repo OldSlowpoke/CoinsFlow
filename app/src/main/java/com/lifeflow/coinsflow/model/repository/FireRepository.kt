@@ -7,7 +7,8 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.lifeflow.coinsflow.model.Account
-import com.lifeflow.coinsflow.model.Category
+import com.lifeflow.coinsflow.model.ExpenseCategories
+import com.lifeflow.coinsflow.model.IncomesCategories
 import com.lifeflow.coinsflow.model.Market
 import com.lifeflow.coinsflow.model.Product
 import com.lifeflow.coinsflow.model.Transaction
@@ -24,7 +25,8 @@ class FireRepository @Inject constructor(
     // Хранение ссылок на слушатели
     private var transactionListener: ListenerRegistration? = null
     private var productListener: ListenerRegistration? = null
-    private var categoryListener: ListenerRegistration? = null
+    private var expenseCategoriesListener: ListenerRegistration? = null
+    private var incomesCategoriesListener: ListenerRegistration? = null
     private var accountsListener: ListenerRegistration? = null
     private var marketsListener: ListenerRegistration? = null
 
@@ -32,15 +34,17 @@ class FireRepository @Inject constructor(
     fun stopAllListeners() {
         transactionListener?.remove()
         productListener?.remove()
-        categoryListener?.remove()
+        expenseCategoriesListener?.remove()
         accountsListener?.remove()
         marketsListener?.remove()
+        incomesCategoriesListener?.remove()
 
         transactionListener = null
         productListener = null
-        categoryListener = null
+        expenseCategoriesListener = null
         accountsListener = null
         marketsListener = null
+        incomesCategoriesListener = null
     }
 
     //Transactions
@@ -125,43 +129,43 @@ class FireRepository @Inject constructor(
             .await()
     }
 
-    //Categories
-    fun getCategories(): Flow<List<Category>> = callbackFlow {
+    //ExpenseCategories
+    fun getExpenseCategories(): Flow<List<ExpenseCategories>> = callbackFlow {
         val snapshotListener = firestore
             .collection("users")
             .document(currentUserId())
-            .collection("categories")
+            .collection("expenseCategories")
             .addSnapshotListener { snapshot, e ->
                 if (e != null) {
                     close(e)
                     return@addSnapshotListener
                 }
                 if (snapshot != null && !snapshot.isEmpty) {
-                    val category = snapshot.toObjects(Category::class.java)
+                    val category = snapshot.toObjects(ExpenseCategories::class.java)
                     trySend(category)
                 }
             }
-        awaitClose { categoryListener?.remove() }
+        awaitClose { expenseCategoriesListener?.remove() }
     }
 
-    suspend fun addCategory(category: Category, id: String) {
+    suspend fun addExpenseCategory(expenseCategories: ExpenseCategories, id: String) {
         firestore
             .collection("users")
             .document(currentUserId())
-            .collection("categories")
+            .collection("expenseCategories")
             .document(id)
-            .set(category)
+            .set(expenseCategories)
             .await()
     }
 
-    suspend fun addSubCategory(category: Category, subCategory: String) {
+    suspend fun addSubExpenseCategory(expenseCategories: ExpenseCategories, subCategory: String) {
         try {
             firestore
                 .collection("users")
                 .document(currentUserId())
-                .collection("categories")
-                .document(category.id)
-                .update("subCategories", FieldValue.arrayUnion(subCategory))
+                .collection("expenseCategories")
+                .document(expenseCategories.id)
+                .update("subExpenseCategories", FieldValue.arrayUnion(subCategory))
                 .await()
         } catch (e: Exception) {
             // Обработка ошибок (например, логирование)
@@ -170,14 +174,14 @@ class FireRepository @Inject constructor(
         }
     }
 
-    suspend fun deleteSubCategory(category: Category, subCategory: String) {
+    suspend fun deleteSubExpenseCategory(expenseCategories: ExpenseCategories, subCategory: String) {
         try {
             firestore
                 .collection("users")
                 .document(currentUserId())
-                .collection("categories")
-                .document(category.id)
-                .update("subCategories", FieldValue.arrayRemove(subCategory))
+                .collection("expenseCategories")
+                .document(expenseCategories.id)
+                .update("subExpenseCategories", FieldValue.arrayRemove(subCategory))
                 .await()
         } catch (e: Exception) {
             // Логируем ошибку
@@ -186,11 +190,82 @@ class FireRepository @Inject constructor(
         }
     }
 
-    suspend fun deleteCategory(category: Category) {
+    suspend fun deleteExpenseCategory(expenseCategories: ExpenseCategories) {
         firestore
             .collection("users")
             .document(currentUserId())
-            .collection("categories")
+            .collection("expenseCategories")
+            .document(expenseCategories.id)
+            .delete()
+            .await()
+    }
+
+    //IncomeCategories
+    fun getIncomesCategories(): Flow<List<IncomesCategories>> = callbackFlow {
+        val snapshotListener = firestore
+            .collection("users")
+            .document(currentUserId())
+            .collection("incomesCategories")
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    close(e)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null && !snapshot.isEmpty) {
+                    val category = snapshot.toObjects(IncomesCategories::class.java)
+                    trySend(category)
+                }
+            }
+        awaitClose { incomesCategoriesListener?.remove() }
+    }
+
+    suspend fun addIncomesCategory(category: IncomesCategories, id: String) {
+        firestore
+            .collection("users")
+            .document(currentUserId())
+            .collection("incomesCategories")
+            .document(id)
+            .set(category)
+            .await()
+    }
+
+    suspend fun addSubIncomesCategory(category: IncomesCategories, subCategory: String) {
+        try {
+            firestore
+                .collection("users")
+                .document(currentUserId())
+                .collection("incomesCategories")
+                .document(category.id)
+                .update("subIncomesCategories", FieldValue.arrayUnion(subCategory))
+                .await()
+        } catch (e: Exception) {
+            // Обработка ошибок (например, логирование)
+            Log.e("FireRepository", "Error adding subcategory", e)
+            throw e
+        }
+    }
+
+    suspend fun deleteSubIncomesCategory(category: IncomesCategories, subCategory: String) {
+        try {
+            firestore
+                .collection("users")
+                .document(currentUserId())
+                .collection("incomesCategories")
+                .document(category.id)
+                .update("subIncomesCategories", FieldValue.arrayRemove(subCategory))
+                .await()
+        } catch (e: Exception) {
+            // Логируем ошибку
+            Log.e("FireRepository", "Error deleting subcategory", e)
+            throw e
+        }
+    }
+
+    suspend fun deleteIncomesCategory(category: IncomesCategories) {
+        firestore
+            .collection("users")
+            .document(currentUserId())
+            .collection("incomesCategories")
             .document(category.id)
             .delete()
             .await()

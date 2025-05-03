@@ -8,10 +8,13 @@
     <string name="routes">Categories</string>
     <string name="products">Products</string>
     <string name="product">Product</string>
-    <string name="categories">Categories</string>
+    <string name="expense_categories">ExpenseCategories</string>
+    <string name="add_expense_categories">AddExpenseCategories</string>
+    <string name="add_sub_expense_categories">AddSubExpenseCategories</string>
     <string name="add_product">AddProduct</string>
-    <string name="add_categories">AddCategories</string>
-    <string name="add_subcategories">AddSubCategories</string>
+    <string name="incomes_categories">IncomesCategories</string>
+    <string name="add_incomes_categories">AddIncomesCategories</string>
+    <string name="add_sub_incomes_categories">AddSubIncomesCategories</string>
     <string name="add_account">AddAccount</string>
     <string name="add_market">AddMarket</string>
     <string name="markets">Markets</string>

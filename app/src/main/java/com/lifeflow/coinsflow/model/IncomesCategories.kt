@@ -1,8 +1,8 @@
 package com.lifeflow.coinsflow.model
 
-data class Category (
+data class IncomesCategories(
     var name: String = "",
     val description: String = "",
     val id: String = "",
-    val subCategories: MutableList<String> = mutableListOf(),
+    val subIncomesCategories: MutableList<String> = mutableListOf(),
 )

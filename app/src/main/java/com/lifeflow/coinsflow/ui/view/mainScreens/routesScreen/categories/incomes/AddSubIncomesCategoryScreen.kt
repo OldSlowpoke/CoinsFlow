@@ -1,4 +1,4 @@
-package com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories
+package com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories.incomes
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -26,17 +26,18 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.lifeflow.coinsflow.R
-import com.lifeflow.coinsflow.model.Category
+import com.lifeflow.coinsflow.model.ExpenseCategories
+import com.lifeflow.coinsflow.model.IncomesCategories
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 
 @Composable
-fun AddSubCategoryScreen(
+fun AddSubIncomesCategoriesCategoryScreen(
     vm: FireViewModel,
     backUp: () -> Unit,
 ) {
     var subCategory by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf(Category()) }
-    val categories by vm.categories.collectAsState()
+    var category by remember { mutableStateOf(IncomesCategories()) }
+    val categories by vm.incomesCategories.collectAsState()
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp)
@@ -55,7 +56,7 @@ fun AddSubCategoryScreen(
         Button(
             modifier = Modifier.fillMaxWidth().padding(start = 4.dp, end = 4.dp, top = 16.dp),
             onClick = {
-                vm.addSubCategory(category, subCategory)
+                vm.addSubIncomesCategory(category, subCategory)
                 backUp()
             },
             enabled = subCategory.isNotBlank() || category.name.isNotBlank(),
@@ -67,9 +68,9 @@ fun AddSubCategoryScreen(
 
 @Composable
 fun CategoryBox(
-    category: Category,
-    onCategoryChange: (Category) -> Unit,
-    categories: List<Category>
+    category: IncomesCategories,
+    onCategoryChange: (IncomesCategories) -> Unit,
+    categories: List<IncomesCategories>
 ) {
     var isActivityDropdownOpen by remember { mutableStateOf(false) }
 

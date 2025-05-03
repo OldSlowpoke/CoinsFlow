@@ -1,4 +1,4 @@
-package com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories
+package com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories.incomes
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -16,11 +16,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.lifeflow.coinsflow.model.Category
+import com.lifeflow.coinsflow.model.ExpenseCategories
+import com.lifeflow.coinsflow.model.IncomesCategories
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 
 @Composable
-fun AddCategoryScreen(
+fun AddIncomesCategoryScreen(
     vm: FireViewModel,
     backUp: () -> Unit,
 ) {
@@ -51,8 +52,8 @@ fun AddCategoryScreen(
             modifier = Modifier.fillMaxWidth().padding(start = 4.dp, end = 4.dp),
             onClick = {
                 id = vm.getLinkOnFirePath("categories")
-                vm.addCategory(
-                    Category(
+                vm.addIncomesCategory(
+                    IncomesCategories(
                         name = name,
                         description = description,
                         id = id,
