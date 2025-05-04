@@ -49,6 +49,7 @@ fun AddSubExpenseCategoryScreen(
         TextField(
             value = subCategory,
             onValueChange = { subCategory = it },
+            placeholder = { Text("Введите название подкатегории") },
             label = { Text("Название подкатегории") },
             modifier = Modifier.fillMaxWidth()
         )
@@ -83,6 +84,7 @@ fun CategoryBox(
             value = category.name,
             onValueChange = { },
             label = { Text("Категория") },
+            placeholder = { Text("Выберите категорию") },
             readOnly = true,
             trailingIcon = {
                 IconButton(onClick = { isActivityDropdownOpen = !isActivityDropdownOpen }) {

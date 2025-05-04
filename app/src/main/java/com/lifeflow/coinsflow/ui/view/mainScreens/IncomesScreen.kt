@@ -168,7 +168,8 @@ fun IncomesTotalBox(
     onTotalChange: (String) -> Unit
 ) {
     OutlinedTextField(
-        value = total.ifEmpty { "Введите сумму" },
+        value = total,
+        placeholder = { Text("Введите сумму") },
         onValueChange = { newValue ->
             if (
                 newValue.isBlank() || newValue
@@ -200,7 +201,8 @@ fun IncomesDateBox(
         modifier = Modifier.fillMaxWidth()
     ) {
         TextField(
-            value = selectedDate.ifEmpty { "Выберите дату" },
+            value = selectedDate,
+            placeholder = { Text("Выберите дату") },
             onValueChange = { },
             label = { Text("Дата") },
             readOnly = true,
@@ -256,7 +258,8 @@ fun IncomesMarketBox(
             .padding(vertical = 8.dp)
     ) {
         TextField(
-            value = market.name.ifEmpty { "Выберите магазин" },
+            value = market.name,
+            placeholder = { Text("Выберите магазин") },
             onValueChange = { },
             label = { Text("Магазин") },
             readOnly = true,
@@ -306,7 +309,8 @@ fun IncomesAccountBox(
             .padding(vertical = 8.dp)
     ) {
         TextField(
-            value = account.accountName.ifEmpty { "Выберите счет" },
+            value = account.accountName,
+            placeholder = { Text("Выберите счет") },
             onValueChange = { },
             label = { Text("Счет") },
             readOnly = true,
@@ -356,7 +360,8 @@ fun IncomesCategoryBox(
             .padding(vertical = 8.dp)
     ) {
         TextField(
-            value = category.name.ifEmpty { "Выберите категорию" },
+            value = category.name,
+            placeholder = { Text("Выберите категорию") },
             onValueChange = { },
             label = { Text("Категория") },
             readOnly = true,
@@ -406,7 +411,8 @@ fun IncomesSubCategoryBox(
             .padding(vertical = 8.dp)
     ) {
         TextField(
-            value = selectedSubCategory.ifEmpty { "Выберите подкатегорию" },
+            value = selectedSubCategory,
+            placeholder = { Text("Выберите подкатегорию") },
             onValueChange = { },
             label = { Text("Подкатегория") },
             readOnly = true,

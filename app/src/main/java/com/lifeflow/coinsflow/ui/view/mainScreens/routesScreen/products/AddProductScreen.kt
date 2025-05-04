@@ -35,6 +35,7 @@ fun AddProductScreen(
     ) {
         TextField(
             value = name,
+            placeholder = { Text("Введите название товара или услуги") },
             onValueChange = { name = it },
             label = { Text("Название") },
             modifier = Modifier.fillMaxWidth()
@@ -42,6 +43,7 @@ fun AddProductScreen(
         Spacer(modifier = Modifier.height(16.dp))
         TextField(
             value = description,
+            placeholder = { Text("Введите описание") },
             onValueChange = { description = it },
             label = { Text("Описание") },
             modifier = Modifier.fillMaxWidth()

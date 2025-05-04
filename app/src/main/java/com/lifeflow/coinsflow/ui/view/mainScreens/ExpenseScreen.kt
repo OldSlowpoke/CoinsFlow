@@ -68,9 +68,6 @@ fun ExpensesScreen(
     var categoryState by remember { mutableStateOf(ExpenseCategories()) }
     var totalState by remember { mutableStateOf("") }
     var subCategory by remember { mutableStateOf("") }
-    /*var checkItems by remember {
-        mutableStateOf<List<Check>>(mutableListOf())
-    }*/
 
     var id: String
 
@@ -120,15 +117,16 @@ fun ExpensesScreen(
             categories = categories,
         )
 
-        // Показываем подкатегорию только если у категории есть подкатегории
+        if (categoryState.subExpenseCategories.isNotEmpty()) {
+            // Показываем подкатегорию только если у категории есть подкатегории
+            HorizontalDivider()
 
-        HorizontalDivider()
-
-        ExpensesSubCategoryBox(
-            subCategories = categoryState.subExpenseCategories,
-            selectedSubCategory = subCategory,
-            onSubCategoryChange = { newValue -> subCategory = newValue }
-        )
+            ExpensesSubCategoryBox(
+                subCategories = categoryState.subExpenseCategories,
+                selectedSubCategory = subCategory,
+                onSubCategoryChange = { newValue -> subCategory = newValue }
+            )
+        }
 
         HorizontalDivider()
 
@@ -182,7 +180,8 @@ fun ExpensesTotalBox(
     onTotalChange: (String) -> Unit
 ) {
     OutlinedTextField(
-        value = total.ifEmpty { "Введите сумму" },
+        value = total,
+        placeholder = { Text("Введите сумму") },
         onValueChange = { newValue ->
             if (
                 newValue.isBlank() || newValue
@@ -214,7 +213,8 @@ fun ExpensesDateBox(
         modifier = Modifier.fillMaxWidth()
     ) {
         TextField(
-            value = selectedDate.ifEmpty { "Выберите дату" },
+            value = selectedDate,
+            placeholder = { Text("Выберите дату") },
             onValueChange = { },
             label = { Text("Дата") },
             readOnly = true,
@@ -270,7 +270,8 @@ fun ExpensesMarketBox(
             .padding(vertical = 8.dp)
     ) {
         TextField(
-            value = market.name.ifEmpty { "Выберите магазин" },
+            value = market.name,
+            placeholder = { Text("Выберите магазин") },
             onValueChange = { },
             label = { Text("Магазин") },
             readOnly = true,
@@ -320,7 +321,8 @@ fun ExpensesAccountBox(
             .padding(vertical = 8.dp)
     ) {
         TextField(
-            value = account.accountName.ifEmpty { "Выберите счет" },
+            value = account.accountName,
+            placeholder = { Text("Выберите счет") },
             onValueChange = { },
             label = { Text("Счет") },
             readOnly = true,
@@ -370,7 +372,8 @@ fun ExpensesCategoryBox(
             .padding(vertical = 8.dp)
     ) {
         TextField(
-            value = category.name.ifEmpty { "Выберите категорию" },
+            value = category.name,
+            placeholder = { Text("Выберите категорию") },
             onValueChange = { },
             label = { Text("Категория") },
             readOnly = true,
@@ -420,7 +423,8 @@ fun ExpensesSubCategoryBox(
             .padding(vertical = 8.dp)
     ) {
         TextField(
-            value = selectedSubCategory.ifEmpty { "Выберите подкатегорию" },
+            value = selectedSubCategory,
+            placeholder = { Text("Выберите подкатегорию") },
             onValueChange = { },
             label = { Text("Подкатегория") },
             readOnly = true,

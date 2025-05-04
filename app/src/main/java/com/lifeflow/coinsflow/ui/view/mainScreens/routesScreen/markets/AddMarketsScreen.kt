@@ -37,12 +37,14 @@ fun AddMarketsScreen(
         TextField(
             value = name,
             onValueChange = { name = it },
+            placeholder = { Text("Введите название магазина") },
             label = { Text("Название") },
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(16.dp))
         TextField(
             value = description,
+            placeholder = { Text("Введите описание") },
             onValueChange = { description = it },
             label = { Text("Описание") },
             modifier = Modifier.fillMaxWidth()
@@ -50,6 +52,7 @@ fun AddMarketsScreen(
         Spacer(modifier = Modifier.height(16.dp))
         TextField(
             value = street,
+            placeholder = { Text("Введите адрес магазина") },
             onValueChange = { street = it },
             label = { Text("Адрес") },
             modifier = Modifier.fillMaxWidth()

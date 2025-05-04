@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
@@ -31,29 +33,24 @@ fun ProductsScreen(
 ) {
     val products by vm.products.collectAsState()
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                navAddProductScreen()
+        item {
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    navAddProductScreen()
+                }
+            ) {
+                Text("Добавить")
             }
-        ) {
-            Text("Добавить")
         }
-        products.forEachIndexed { index, product ->
+
+        items(products) { product ->
             CategoryItem(product, vm)
-            if (index < products.size - 1) {
-                HorizontalDivider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    thickness = 1.dp
-                )
-            }
         }
     }
 }
@@ -97,5 +94,6 @@ fun CategoryItem(
                 )
             }
         }
+        HorizontalDivider()
     }
 }

@@ -37,6 +37,7 @@ fun AddIncomesCategoryScreen(
         TextField(
             value = name,
             onValueChange = { name = it },
+            placeholder = { Text("Введите название категории") },
             label = { Text("Название") },
             modifier = Modifier.fillMaxWidth()
         )
@@ -44,6 +45,7 @@ fun AddIncomesCategoryScreen(
         TextField(
             value = description,
             onValueChange = { description = it },
+            placeholder = { Text("Введите описание категории") },
             label = { Text("Описание") },
             modifier = Modifier.fillMaxWidth()
         )

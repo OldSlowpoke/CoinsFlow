@@ -40,6 +40,7 @@ fun AddAccountScreen(
     ) {
         TextField(
             value = name,
+            placeholder = { Text("Введите название счета") },
             onValueChange = { name = it },
             label = { Text("Название") },
             modifier = Modifier.fillMaxWidth(),
@@ -47,6 +48,7 @@ fun AddAccountScreen(
         Spacer(modifier = Modifier.height(16.dp))
         TextField(
             value = description,
+            placeholder = { Text("Введите описание") },
             onValueChange = { description = it },
             label = { Text("Описание") },
             modifier = Modifier.fillMaxWidth()
@@ -54,6 +56,7 @@ fun AddAccountScreen(
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = total,
+            placeholder = { Text("Введите баланс счета") },
             onValueChange = { newValue ->
                 if (
                     newValue.isBlank() || newValue

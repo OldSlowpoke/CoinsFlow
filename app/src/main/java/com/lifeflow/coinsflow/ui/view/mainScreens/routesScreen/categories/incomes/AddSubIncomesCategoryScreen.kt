@@ -50,6 +50,7 @@ fun AddSubIncomesCategoriesCategoryScreen(
         TextField(
             value = subCategory,
             onValueChange = { subCategory = it },
+            placeholder = { Text("Введите название подкатегории") },
             label = { Text("Название подкатегории") },
             modifier = Modifier.fillMaxWidth()
         )
@@ -83,6 +84,7 @@ fun CategoryBox(
         TextField(
             value = category.name,
             onValueChange = { },
+            placeholder = { Text("Выберите категорию") },
             label = { Text("Категория") },
             readOnly = true,
             trailingIcon = {

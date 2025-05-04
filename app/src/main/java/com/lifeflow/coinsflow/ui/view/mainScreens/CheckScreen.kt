@@ -89,7 +89,7 @@ fun CheckScreen(
 fun ExpenseItemRow(checkItem: Check, products: List<Product>) {
 
     var productName by remember { mutableStateOf(Product()) }
-    var amountState by remember { mutableStateOf("") }
+    var amount by remember { mutableStateOf("") }
     var count by remember { mutableStateOf(0) }
     var discount by remember { mutableStateOf(false) }
 
@@ -111,9 +111,9 @@ fun ExpenseItemRow(checkItem: Check, products: List<Product>) {
                 onCheckedChange = { discount = !discount }
             )
             // Поле Сумма
-            ExpensesTotalBox(
-                total = amountState,
-                onTotalChange = { newValue -> amountState = newValue }
+            ExpensesBox(
+                total = amount,
+                onTotalChange = { newValue -> amount = newValue }
             )
         }
     }
@@ -134,7 +134,8 @@ fun ProductBox(
             .padding(vertical = 8.dp)
     ) {
         TextField(
-            value = product.name.ifEmpty { "Выберите товар" },
+            value = product.name,
+            placeholder = { Text("Выберите товар или услугу") },
             onValueChange = { },
             label = { Text("Товар") },
             readOnly = true,
@@ -193,7 +194,8 @@ fun ExpensesBox(
     onTotalChange: (String) -> Unit
 ) {
     OutlinedTextField(
-        value = total.ifEmpty { "Введите сумму" },
+        value = total,
+        placeholder = { Text("Введите сумму") },
         onValueChange = { newValue ->
             if (
                 newValue.isBlank() || newValue

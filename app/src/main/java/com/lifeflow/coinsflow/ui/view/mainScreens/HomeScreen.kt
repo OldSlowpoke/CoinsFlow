@@ -45,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.lifeflow.coinsflow.R
 import com.lifeflow.coinsflow.viewModel.FireViewModel
+import androidx.compose.foundation.lazy.items
 
 @Composable
 fun HomeScreen(
@@ -171,8 +172,8 @@ fun Transactions(
                     textAlign = TextAlign.Center
                 )
             }
-            items(incomes.size) { index ->
-                TransactionItem(transaction = incomes[index], mv)
+            items(incomes) { transaction ->
+                TransactionItem(transaction = transaction, mv)
             }
         }
     }
