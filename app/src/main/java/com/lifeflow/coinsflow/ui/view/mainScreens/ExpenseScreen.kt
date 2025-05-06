@@ -44,9 +44,9 @@ import androidx.compose.ui.window.Popup
 import com.lifeflow.coinsflow.R
 import com.lifeflow.coinsflow.model.Account
 import com.lifeflow.coinsflow.model.ExpenseCategories
-import com.lifeflow.coinsflow.model.Check
 import com.lifeflow.coinsflow.model.Market
 import com.lifeflow.coinsflow.model.Transaction
+import com.lifeflow.coinsflow.model.CheckEntity
 import com.lifeflow.coinsflow.ui.view.convertMillisToDate
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 
@@ -61,7 +61,7 @@ fun ExpensesScreen(
     val accounts by vm.accounts.collectAsState()
     val markets by vm.markets.collectAsState()
     val categories by vm.expenseCategories.collectAsState()
-    val checkItems by vm.checkItems.collectAsState()
+    //val checkItems by vm.checkItems.collectAsState()
 
     var accountState by remember { mutableStateOf(Account()) }
     var marketState by remember { mutableStateOf(Market()) }
@@ -133,7 +133,6 @@ fun ExpensesScreen(
         // Поле Чек
         ExpenseCheckBox(
             navOnCheckScreen = {navOnCheckScreen()},
-            checkItems = checkItems
         )
 
         HorizontalDivider()
@@ -461,14 +460,13 @@ fun ExpensesSubCategoryBox(
 
 @Composable
 fun ExpenseCheckBox(
-    navOnCheckScreen: (MutableList<Check>) -> Unit,
-    checkItems: MutableList<Check>
+    navOnCheckScreen: () -> Unit,
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                navOnCheckScreen(checkItems)
+                navOnCheckScreen()
             }
             .padding(vertical = 8.dp)
     ) {

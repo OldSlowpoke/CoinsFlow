@@ -4,13 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lifeflow.coinsflow.model.Account
 import com.lifeflow.coinsflow.model.ExpenseCategories
-import com.lifeflow.coinsflow.model.Check
 import com.lifeflow.coinsflow.model.IncomesCategories
 import com.lifeflow.coinsflow.model.Market
 import com.lifeflow.coinsflow.model.Product
 import com.lifeflow.coinsflow.model.Transaction
 import com.lifeflow.coinsflow.model.UnitType
-import com.lifeflow.coinsflow.model.repository.CheckEntity
+import com.lifeflow.coinsflow.model.CheckEntity
 import com.lifeflow.coinsflow.model.repository.FireRepository
 import com.lifeflow.coinsflow.model.uiState.AuthUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -71,6 +70,11 @@ class FireViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = 0.0
     )
+
+    fun addChecks(checks: MutableList<CheckEntity>) = viewModelScope.launch {
+        fireRepository.addChecks(checks)
+
+    }
 
     // Добавление нового пустого элемента
     fun addItem(vm: FireViewModel) {
@@ -194,6 +198,14 @@ class FireViewModel @Inject constructor(
 
     fun deleteTransactions(transaction: Transaction) = viewModelScope.launch {
         fireRepository.deleteTransactions(transaction)
+    }
+
+    fun saveChecksAndTransaction(
+        checkEntities: MutableList<CheckEntity>,
+        transaction: Transaction,
+        path: String
+    ) = viewModelScope.launch {
+        fireRepository.saveChecksAndTransaction(checkEntities, transaction, path)
     }
 
     fun getLinkOnFirePath(path: String) = fireRepository.getLinkOnFirePath(path)

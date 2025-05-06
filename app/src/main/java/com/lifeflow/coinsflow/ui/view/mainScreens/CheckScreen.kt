@@ -42,10 +42,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.lifeflow.coinsflow.R
-import com.lifeflow.coinsflow.model.Check
 import com.lifeflow.coinsflow.model.Product
 import com.lifeflow.coinsflow.model.UnitType
-import com.lifeflow.coinsflow.model.repository.CheckEntity
+import com.lifeflow.coinsflow.model.CheckEntity
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -73,7 +72,7 @@ fun CheckScreen(vm: FireViewModel) {
             )
         }
         Button(
-            onClick = { /* Логика сохранения */ },
+            onClick = { vm.addChecks(vm.checkItems.value) },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Сохранить")
@@ -115,20 +114,22 @@ fun CheckItemRow(
     checkItem: CheckEntity,
     products: List<Product>,
     onProductSelected: (Product) -> Unit,
-    onQuantityChange: (Double) -> Unit,
-    onPriceChange: (Double) -> Unit,
+    onQuantityChange: (BigDecimal) -> Unit,
+    onPriceChange: (BigDecimal) -> Unit,
     onDiscountToggle: () -> Unit,
     onUnitChange: (UnitType) -> Unit,
     onRemoveClick: () -> Unit,
 ) {
     var quantity by remember(checkItem.count) {
         mutableStateOf(
-            if (checkItem.count == 0.0) "" else checkItem.count.toString()
+            if (checkItem.count.compareTo(BigDecimal.ZERO) == 0) ""
+            else checkItem.count.toString()
         )
     }
     var price by remember(checkItem.amount) {
         mutableStateOf(
-            if (checkItem.amount == 0.0) "" else checkItem.amount.toString()
+            if (checkItem.amount.compareTo(BigDecimal.ZERO) == 0) ""
+            else checkItem.amount.toString()
         )
     }
     var selectedProduct by remember(checkItem.productName) {
@@ -144,8 +145,10 @@ fun CheckItemRow(
 
     // Синхронизация при изменении checkItem
     LaunchedEffect(checkItem) {
-        quantity = if (checkItem.count == 0.0) "" else checkItem.count.toString()
-        price = if (checkItem.amount == 0.0) "" else checkItem.amount.toString()
+        quantity = if (checkItem.count.compareTo(BigDecimal.ZERO) == 0) ""
+        else checkItem.count.toString()
+        price = if (checkItem.amount.compareTo(BigDecimal.ZERO) == 0) ""
+        else checkItem.amount.toString()
         selectedProduct = products.find { it.name == checkItem.productName } ?: Product("", "")
         selectedUnit = checkItem.unit
     }
@@ -201,7 +204,7 @@ fun CheckItemRow(
                 placeholder = { Text("Введите количество товара") },
                 onValueChange = { newValue ->
                     quantity = newValue
-                    val parsedQty = newValue.toDoubleOrNull() ?: 0.0
+                    val parsedQty = newValue.toBigDecimalOrNull() ?: BigDecimal.ZERO
                     onQuantityChange(parsedQty)
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -223,7 +226,7 @@ fun CheckItemRow(
                             )
                     ) {
                         price = newValue
-                        val parsedPrice = newValue.toDoubleOrNull() ?: 0.0
+                        val parsedPrice = newValue.toBigDecimalOrNull() ?: BigDecimal.ZERO
                         onPriceChange(parsedPrice)
                     }
                 },
@@ -248,14 +251,14 @@ fun CheckItemRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
-            ){
+            ) {
                 // Общая сумма
                 val total = remember(quantity, price, selectedUnit) {
                     derivedStateOf {
                         val qty = quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
                         val unitPrice = price.toBigDecimalOrNull() ?: BigDecimal.ZERO
                         val subtotal = unitPrice.multiply(qty)
-                        val total =  subtotal.setScale(2, RoundingMode.HALF_UP)
+                        val total = subtotal.setScale(2, RoundingMode.HALF_UP)
                         total.toDouble()
                     }
                     /*when (selectedUnit) {

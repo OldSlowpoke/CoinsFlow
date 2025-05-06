@@ -1,6 +1,5 @@
-package com.lifeflow.coinsflow.model.repository
+package com.lifeflow.coinsflow.model
 
-import com.lifeflow.coinsflow.model.UnitType
 import java.math.BigDecimal
 
 data class CheckEntity(

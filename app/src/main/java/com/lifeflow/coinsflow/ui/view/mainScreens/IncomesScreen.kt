@@ -56,6 +56,7 @@ fun IncomesScreen(
     val accounts by vm.accounts.collectAsState()
     val markets by vm.markets.collectAsState()
     val categories by vm.expenseCategories.collectAsState()
+    val checkItems by vm.checkItems.collectAsState()
 
     var accountState by remember { mutableStateOf(Account()) }
     var marketState by remember { mutableStateOf(Market()) }
@@ -138,7 +139,8 @@ fun IncomesScreen(
         Button(
             onClick = {
                 id = vm.getLinkOnFirePath("transactions")
-                vm.addTransactions(
+                vm.saveChecksAndTransaction(
+                    checkItems,
                     Transaction(
                         date = selectedDate,
                         total = totalState.toDouble(),

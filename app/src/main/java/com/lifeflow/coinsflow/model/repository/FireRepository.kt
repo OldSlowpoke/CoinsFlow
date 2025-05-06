@@ -3,12 +3,12 @@ package com.lifeflow.coinsflow.model.repository
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.lifeflow.coinsflow.model.Account
 import com.lifeflow.coinsflow.model.Check
+import com.lifeflow.coinsflow.model.CheckEntity
 import com.lifeflow.coinsflow.model.ExpenseCategories
 import com.lifeflow.coinsflow.model.IncomesCategories
 import com.lifeflow.coinsflow.model.Market
@@ -71,6 +71,47 @@ class FireRepository @Inject constructor(
         awaitClose { transactionListener?.remove() }
     }
 
+    suspend fun saveChecksAndTransaction(
+        checkEntities: MutableList<CheckEntity>,
+        transaction: Transaction,
+        path: String
+    ): Result<Unit> {
+        return try {
+            /*if (checkEntities.isEmpty()) {
+                addTransaction(transaction, path)
+                Result.success(Unit)
+            } else {*/
+            val links = addChecks(checkEntities)
+            // 2. Обновляем Transaction, добавляя ссылки на чеки
+            transaction.checkLinks = links
+            addTransaction(transaction, path) // Предполагается метод addTransaction
+
+            Result.success(Unit)
+
+        } catch (e: Exception) {
+            Log.e("FireRepository", "Ошибка сохранения чеков и транзакции", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun addChecks(checks: MutableList<CheckEntity>)
+            : MutableList<String> {
+        val checksLinks = mutableListOf<String>()
+        for (entity in checks) {
+            checksLinks.add(entity.id)
+            // Преобразуем CheckEntity в Check и сохраняем в Firestore
+            val check = entity.toCheck() // Предполагается метод toCheck()
+            firestore
+                .collection("users")
+                .document(currentUserId())
+                .collection("checks")
+                .document(entity.id)
+                .set(check)
+                .await()
+        }
+        return checksLinks
+    }
+
     suspend fun addTransaction(transaction: Transaction, id: String) {
         firestore
             .collection("users")
@@ -92,7 +133,11 @@ class FireRepository @Inject constructor(
     }
 
     fun getLinkOnFirePath(path: String): String {
-        return firestore.collection(path).document().id
+        return firestore
+            .collection("users")
+            .document(currentUserId())
+            .collection(path)
+            .document().id
     }
 
     //Products
@@ -179,7 +224,10 @@ class FireRepository @Inject constructor(
         }
     }
 
-    suspend fun deleteSubExpenseCategory(expenseCategories: ExpenseCategories, subCategory: String) {
+    suspend fun deleteSubExpenseCategory(
+        expenseCategories: ExpenseCategories,
+        subCategory: String
+    ) {
         try {
             firestore
                 .collection("users")
@@ -400,38 +448,6 @@ class FireRepository @Inject constructor(
             .await()
     }
 }
-/*
-fun loadCheck(document: DocumentSnapshot): Check {
-    val productId = document.getString("productId") ?: ""
-    val productName = document.getString("productName") ?: ""
-    val countCents = document.getLong("countCents") ?: 0L
-    val amountCents = document.getLong("amountCents") ?: 0L
-    val discount = document.getBoolean("discount") ?: false
-    val unitName = document.getString("unit") ?: UnitType.PIECE.name
-
-    return CheckEntity(
-        productId = productId,
-        productName = productName,
-        countCents = countCents,
-        amountCents = amountCents,
-        discount = discount,
-        unit = unitName
-    ).toCheck()
-}
-
-fun saveCheck(check: Check) {
-    val entity = check.toCheckEntity()
-    val firestore = FirebaseFirestore.getInstance()
-    val data = hashMapOf(
-        "productId" to entity.productId,
-        "productName" to entity.productName,
-        "countCents" to entity.countCents,
-        "amountCents" to entity.amountCents,
-        "discount" to entity.discount,
-        "unit" to entity.unit
-    )
-    firestore.collection("checks").add(data)
-}*/
 
 // Из CheckEntity в Check
 fun CheckEntity.toCheck(): Check {
@@ -464,5 +480,6 @@ fun Check.toCheckEntity(): CheckEntity {
         id = this.id
     )
 }
+
 
 
