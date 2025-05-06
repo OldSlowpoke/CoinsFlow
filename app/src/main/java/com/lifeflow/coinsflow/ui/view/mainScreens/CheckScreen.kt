@@ -1,6 +1,7 @@
 package com.lifeflow.coinsflow.ui.view.mainScreens
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
@@ -23,7 +26,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,15 +44,18 @@ import androidx.compose.ui.unit.dp
 import com.lifeflow.coinsflow.R
 import com.lifeflow.coinsflow.model.Check
 import com.lifeflow.coinsflow.model.Product
+import com.lifeflow.coinsflow.model.UnitType
+import com.lifeflow.coinsflow.model.repository.CheckEntity
 import com.lifeflow.coinsflow.viewModel.FireViewModel
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CheckScreen(
-    vm: FireViewModel
-) {
+fun CheckScreen(vm: FireViewModel) {
     val checkItems by vm.checkItems.collectAsState()
     val products by vm.products.collectAsState()
+    val totalSum by vm.totalSum.collectAsState()
 
     Column(
         modifier = Modifier
@@ -55,11 +63,8 @@ fun CheckScreen(
             .padding(16.dp)
     ) {
         Button(
-            onClick = {
-                vm.addItem(Check())
-            },
-            modifier = Modifier
-                .fillMaxWidth()
+            onClick = { vm.addItem(vm) }, // Добавляем новый пустой элемент
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text(
                 "Добавить",
@@ -67,54 +72,215 @@ fun CheckScreen(
                 textAlign = TextAlign.Center
             )
         }
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            items(checkItems) { item ->
-                ExpenseItemRow(checkItem = item, products = products)
-            }
-        }
-        // Кнопка Сохранить
         Button(
             onClick = { /* Логика сохранения */ },
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text("Сохранить")
+        }
+
+        Text("Сумма чека: ${totalSum}")
+
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+            items(items = checkItems, key = { it.id }) { item ->
+                CheckItemRow(
+                    checkItem = item,
+                    products = products,
+                    onProductSelected = { product ->
+                        vm.updateProduct(item.id, product)
+                    },
+                    onQuantityChange = { qty ->
+                        vm.updateQuantity(item.id, qty)
+                    },
+                    onPriceChange = { price ->
+                        vm.updatePrice(item.id, price)
+                    },
+                    onDiscountToggle = {
+                        vm.toggleDiscount(item.id)
+                    },
+                    onUnitChange = { unit ->
+                        vm.updateUnit(item.id, unit)
+                    },
+                    onRemoveClick = {
+                        vm.removeItem(item.id)
+                    }
+                )
+            }
         }
     }
 }
 
 @Composable
-fun ExpenseItemRow(checkItem: Check, products: List<Product>) {
+fun CheckItemRow(
+    checkItem: CheckEntity,
+    products: List<Product>,
+    onProductSelected: (Product) -> Unit,
+    onQuantityChange: (Double) -> Unit,
+    onPriceChange: (Double) -> Unit,
+    onDiscountToggle: () -> Unit,
+    onUnitChange: (UnitType) -> Unit,
+    onRemoveClick: () -> Unit,
+) {
+    var quantity by remember(checkItem.count) {
+        mutableStateOf(
+            if (checkItem.count == 0.0) "" else checkItem.count.toString()
+        )
+    }
+    var price by remember(checkItem.amount) {
+        mutableStateOf(
+            if (checkItem.amount == 0.0) "" else checkItem.amount.toString()
+        )
+    }
+    var selectedProduct by remember(checkItem.productName) {
+        mutableStateOf(
+            products.find { it.name == checkItem.productName } ?: Product("", "")
+        )
+    }
+    var selectedUnit by remember(checkItem.unit) {
+        mutableStateOf(checkItem.unit)
+    }
 
-    var productName by remember { mutableStateOf(Product()) }
-    var amount by remember { mutableStateOf("") }
-    var count by remember { mutableStateOf(0) }
-    var discount by remember { mutableStateOf(false) }
+    var isDropdownOpen by remember { mutableStateOf(false) }
+
+    // Синхронизация при изменении checkItem
+    LaunchedEffect(checkItem) {
+        quantity = if (checkItem.count == 0.0) "" else checkItem.count.toString()
+        price = if (checkItem.amount == 0.0) "" else checkItem.amount.toString()
+        selectedProduct = products.find { it.name == checkItem.productName } ?: Product("", "")
+        selectedUnit = checkItem.unit
+    }
 
     Card(
-        modifier = Modifier.fillMaxSize().padding(end = 8.dp, top = 4.dp)
-    ){
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-        ) {
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Поле выбора товара
             ProductBox(
-                product = productName,
-                onAssetChange = { newItem -> productName = newItem },
+                product = selectedProduct,
+                onAssetChange = onProductSelected,
                 products = products
             )
-            CheckboxWithText(
-                checkedState = discount,
-                onCheckedChange = { discount = !discount }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Единица измерения:")
+                Box {
+                    Text(
+                        text = selectedUnit.name,
+                        modifier = Modifier
+                            .clickable { isDropdownOpen = true }
+                            .padding(8.dp)
+                    )
+                    DropdownMenu(
+                        expanded = isDropdownOpen,
+                        onDismissRequest = { isDropdownOpen = false }
+                    ) {
+                        UnitType.entries.forEach { unit ->
+                            DropdownMenuItem(
+                                text = { Text(unit.name) },
+                                onClick = {
+                                    selectedUnit = unit
+                                    onUnitChange(unit)
+                                    isDropdownOpen = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Поле количества
+            OutlinedTextField(
+                value = quantity,
+                label = { Text("Количество:") },
+                placeholder = { Text("Введите количество товара") },
+                onValueChange = { newValue ->
+                    quantity = newValue
+                    val parsedQty = newValue.toDoubleOrNull() ?: 0.0
+                    onQuantityChange(parsedQty)
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
             )
-            // Поле Сумма
-            ExpensesBox(
-                total = amount,
-                onTotalChange = { newValue -> amount = newValue }
+
+
+            // Поле цены
+            OutlinedTextField(
+                value = price,
+                label = { Text("Цена товара") },
+                placeholder = { Text("Введите цену за товар") },
+                onValueChange = { newValue ->
+                    if (
+                        newValue.isBlank() || newValue
+                            .matches(
+                                "\\d*(\\.\\d{0,2})?"
+                                    .toRegex()
+                            )
+                    ) {
+                        price = newValue
+                        val parsedPrice = newValue.toDoubleOrNull() ?: 0.0
+                        onPriceChange(parsedPrice)
+                    }
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
             )
+
+            // Флаг скидки
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Скидка:")
+                Checkbox(
+                    checked = checkItem.discount,
+                    onCheckedChange = { onDiscountToggle() }
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                // Общая сумма
+                val total = remember(quantity, price, selectedUnit) {
+                    derivedStateOf {
+                        val qty = quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                        val unitPrice = price.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                        val subtotal = unitPrice.multiply(qty)
+                        val total =  subtotal.setScale(2, RoundingMode.HALF_UP)
+                        total.toDouble()
+                    }
+                    /*when (selectedUnit) {
+                        UnitType.PIECE -> derivedStateOf {
+                            val qty = quantity.toDoubleOrNull() ?: 0.0
+                            val unitPrice = price.toDoubleOrNull() ?: 0.0
+                            val total = qty * unitPrice
+                            total
+                        }
+                        else -> derivedStateOf {
+                            val priceForKg = price.toDoubleOrNull() ?: 0.0
+                            val priceForGram = if (priceForKg >= 0) priceForKg / 1000 else 0.0
+                            val qty = quantity.toDoubleOrNull() ?: 0.0
+                            val total = qty * priceForGram
+                            total
+                        }
+                    }*/
+                }
+                Text("Итого: ${total.value}")
+                IconButton(
+                    onClick = onRemoveClick,
+                ) {
+                    Icon(Icons.Filled.Delete, contentDescription = "Удалить категорию")
+                }
+            }
         }
     }
 }
@@ -125,25 +291,24 @@ fun ProductBox(
     onAssetChange: (Product) -> Unit,
     products: List<Product>
 ) {
-    var isActivityDropdownOpen by remember { mutableStateOf(false) }
+    var isDropdownOpen by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { isActivityDropdownOpen = true }
+            .clickable { isDropdownOpen = true }
             .padding(vertical = 8.dp)
     ) {
         TextField(
             value = product.name,
-            placeholder = { Text("Выберите товар или услугу") },
+            placeholder = { Text("Выберите товар") },
             onValueChange = { },
             label = { Text("Товар") },
             readOnly = true,
             trailingIcon = {
-                IconButton(onClick = { isActivityDropdownOpen = !isActivityDropdownOpen }) {
+                IconButton(onClick = { isDropdownOpen = !isDropdownOpen }) {
                     Icon(
-                        imageVector = ImageVector
-                            .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
+                        imageVector = ImageVector.vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
                         contentDescription = "Выбор товара"
                     )
                 }
@@ -152,17 +317,18 @@ fun ProductBox(
                 .fillMaxWidth()
                 .height(64.dp)
         )
+
         DropdownMenu(
-            expanded = isActivityDropdownOpen,
-            onDismissRequest = { isActivityDropdownOpen = false },
+            expanded = isDropdownOpen,
+            onDismissRequest = { isDropdownOpen = false },
             offset = DpOffset(x = 250.dp, y = 5.dp)
         ) {
-            products.forEach { market ->
+            products.forEach { prod ->
                 DropdownMenuItem(
-                    text = { Text(market.name) },
+                    text = { Text(prod.name) },
                     onClick = {
-                        onAssetChange(market)
-                        isActivityDropdownOpen = false
+                        onAssetChange(prod)
+                        isDropdownOpen = false
                     }
                 )
             }
@@ -214,3 +380,34 @@ fun ExpensesBox(
             .padding(vertical = 8.dp)
     )
 }
+
+/*private fun formatNumber(value: Double, unit: UnitType): String {
+    return when (unit) {
+        UnitType.PIECE -> value.toInt().toString() // Например: 2.0 → "2"
+        else -> "%.3f".format(value) // Например: 1.234 → "1.234"
+    }
+}
+
+private fun parseQuantity(value: String, unit: UnitType): Double {
+    return when (unit) {
+        UnitType.PIECE -> {
+            val intValue = value.toIntOrNull()
+            // Для штук: значение должно быть ≥ 1.0
+            intValue?.coerceAtLeast(1)?.toDouble() ?: 1.0
+        }
+
+        else -> {
+            // Проверяем, что ввод соответствует формату: цифры, точка, до 3 знаков после точки
+            if (value.matches(Regex("^\\d*\\.?\\d{0,3}\$"))) {
+                value.toDoubleOrNull() ?: 0.0
+            } else {
+                // Если формат неверен, удаляем последний символ и рекурсивно продолжаем
+                if (value.isNotEmpty()) {
+                    parseQuantity(value.dropLast(1), unit)
+                } else {
+                    0.0
+                }
+            }
+        }
+    }
+}*/

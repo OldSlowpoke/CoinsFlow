@@ -3,19 +3,24 @@ package com.lifeflow.coinsflow.model.repository
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.lifeflow.coinsflow.model.Account
+import com.lifeflow.coinsflow.model.Check
 import com.lifeflow.coinsflow.model.ExpenseCategories
 import com.lifeflow.coinsflow.model.IncomesCategories
 import com.lifeflow.coinsflow.model.Market
 import com.lifeflow.coinsflow.model.Product
 import com.lifeflow.coinsflow.model.Transaction
+import com.lifeflow.coinsflow.model.UnitType
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import java.math.BigDecimal
+import java.math.RoundingMode
 import javax.inject.Inject
 
 class FireRepository @Inject constructor(
@@ -394,6 +399,70 @@ class FireRepository @Inject constructor(
             .delete()
             .await()
     }
+}
+/*
+fun loadCheck(document: DocumentSnapshot): Check {
+    val productId = document.getString("productId") ?: ""
+    val productName = document.getString("productName") ?: ""
+    val countCents = document.getLong("countCents") ?: 0L
+    val amountCents = document.getLong("amountCents") ?: 0L
+    val discount = document.getBoolean("discount") ?: false
+    val unitName = document.getString("unit") ?: UnitType.PIECE.name
+
+    return CheckEntity(
+        productId = productId,
+        productName = productName,
+        countCents = countCents,
+        amountCents = amountCents,
+        discount = discount,
+        unit = unitName
+    ).toCheck()
+}
+
+fun saveCheck(check: Check) {
+    val entity = check.toCheckEntity()
+    val firestore = FirebaseFirestore.getInstance()
+    val data = hashMapOf(
+        "productId" to entity.productId,
+        "productName" to entity.productName,
+        "countCents" to entity.countCents,
+        "amountCents" to entity.amountCents,
+        "discount" to entity.discount,
+        "unit" to entity.unit
+    )
+    firestore.collection("checks").add(data)
+}*/
+
+// Из CheckEntity в Check
+fun CheckEntity.toCheck(): Check {
+    return Check(
+        productName = this.productName,
+        count = this.count.multiply(BigDecimal("1000")) // Умножаем на 1000 для перевода в Long
+            .setScale(0, RoundingMode.HALF_UP)
+            .toBigIntegerExact()
+            .toLong(),
+        amount = this.amount.multiply(BigDecimal("100")) // Умножаем на 100 для перевода в Long
+            .setScale(0, RoundingMode.HALF_UP)
+            .toBigIntegerExact()
+            .toLong(),
+        discount = this.discount,
+        unit = this.unit.name, // Преобразуем UnitType в String
+        id = this.id
+    )
+}
+
+// Из Check в CheckEntity
+fun Check.toCheckEntity(): CheckEntity {
+    return CheckEntity(
+        productName = this.productName,
+        count = BigDecimal.valueOf(this.count) // Преобразуем Long в BigDecimal
+            .divide(BigDecimal("1000"), 3, RoundingMode.HALF_UP), // Делим на 1000
+        amount = BigDecimal.valueOf(this.amount) // Преобразуем Long в BigDecimal
+            .divide(BigDecimal("100"), 2, RoundingMode.HALF_UP), // Делим на 100
+        discount = this.discount,
+        unit = UnitType.valueOf(this.unit), // Преобразуем String в UnitType
+        id = this.id
+    )
 }
 
 

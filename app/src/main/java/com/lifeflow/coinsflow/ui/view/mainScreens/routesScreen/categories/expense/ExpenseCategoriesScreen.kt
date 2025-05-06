@@ -66,7 +66,7 @@ fun ExpenseCategoriesScreen(
         items(expenseCategories) { category -> // Используйте items для категорий
             CategoryItem(
                 category = category,
-                mv = vm,
+                vm = vm,
                 onDeleteSubcategory = { subCategory ->
                     vm.deleteSubExpenseCategory(category, subCategory)
                 }
@@ -78,7 +78,7 @@ fun ExpenseCategoriesScreen(
 @Composable
 fun CategoryItem(
     category: ExpenseCategories,
-    mv: FireViewModel,
+    vm: FireViewModel,
     onDeleteSubcategory: (String) -> Unit
 ) {
     var hasSubCategories by remember { mutableStateOf(false) }
@@ -106,7 +106,7 @@ fun CategoryItem(
                 modifier = Modifier.weight(6f)
             )
             IconButton(
-                onClick = { mv.deleteExpenseCategories(category) },
+                onClick = { vm.deleteExpenseCategories(category) },
                 modifier = Modifier.weight(1f)
             ) {
                 Icon(Icons.Filled.Delete, contentDescription = "Удалить категорию")
