@@ -104,8 +104,12 @@ class FireRepository @Inject constructor(
         path: String
     ): Result<Unit> {
         return try {
-            val firestore = FirebaseFirestore.getInstance()
             val userId = currentUserId()
+
+            // Добавьте дату транзакции в каждый чек
+            val checksWithDate = checkEntities.map { entity ->
+                entity.copy(date = transaction.date) // Устанавливаем дату транзакции
+            }
 
             // Получение ссылки на документ транзакции
             val transactionRef = firestore.collection("users")
@@ -115,7 +119,7 @@ class FireRepository @Inject constructor(
 
             firestore.runBatch { batch ->
                 // 1. Добавление чеков в батч
-                for (entity in checkEntities) {
+                for (entity in checksWithDate) {
                     val checkRef = firestore.collection("users")
                         .document(userId)
                         .collection("checks")
@@ -125,7 +129,7 @@ class FireRepository @Inject constructor(
                 }
 
                 // 2. Обновление транзакции с ссылками на чеки
-                val checkLinks = checkEntities.map { it.id }.toMutableList()
+                val checkLinks = checksWithDate.map { it.id }.toMutableList()
                 transaction.checkLinks = checkLinks
                 batch.set(transactionRef, transaction) // Использование transactionRef
             }.await()
@@ -514,7 +518,8 @@ fun CheckEntity.toCheck(): Check {
             .toLong(),
         discount = this.discount,
         unit = this.unit.name, // Преобразуем UnitType в String
-        id = this.id
+        id = this.id,
+        date = this.date
     )
 }
 
@@ -528,7 +533,8 @@ fun Check.toCheckEntity(): CheckEntity {
             .divide(BigDecimal("100"), 2, RoundingMode.HALF_UP), // Делим на 100
         discount = this.discount,
         unit = UnitType.valueOf(this.unit), // Преобразуем String в UnitType
-        id = this.id
+        id = this.id,
+        date = this.date
     )
 }
 

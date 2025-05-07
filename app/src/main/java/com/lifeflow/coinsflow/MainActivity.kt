@@ -169,9 +169,6 @@ fun MainScreen() {
                 ExpensesScreen(
                     backUp = { navController.popBackStack() },
                     vm,
-                    navOnCheckScreen = {
-                        navController.navigate(NavRoutes.Check.name)
-                    }
                 )
             }
             composable(NavRoutes.Incomes.name) {
