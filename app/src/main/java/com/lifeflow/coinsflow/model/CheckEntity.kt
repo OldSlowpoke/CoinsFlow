@@ -9,5 +9,6 @@ data class CheckEntity(
     var count: BigDecimal = BigDecimal.ZERO,
     var amount: BigDecimal = BigDecimal.ZERO,
     var discount: Boolean = false,
-    var unit: UnitType = UnitType.PIECE
+    var unit: UnitType = UnitType.PIECE,
+    val date: String = "",
 )

@@ -1,6 +1,7 @@
 package com.lifeflow.coinsflow.model.repository
 
 import android.util.Log
+import androidx.compose.runtime.currentComposer
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FieldValue
@@ -71,55 +72,104 @@ class FireRepository @Inject constructor(
         awaitClose { transactionListener?.remove() }
     }
 
+    /*suspend fun saveChecksAndTransaction(
+        checkEntities: MutableList<CheckEntity>,
+        transaction: Transaction,
+        path: String
+    ): Result<Unit> {
+        return try {
+            // Проверка на пустой список чеков
+            if (checkEntities.isEmpty()) {
+                Log.w("FireViewModel", "Попытка сохранить транзакцию без чеков")
+                return Result.failure(IllegalStateException("Нет чеков для сохранения"))
+            }
+
+            // Сохранение чеков и получение их ссылок
+            val checksLinks = addChecks(checkEntities)
+            transaction.checkLinks = checksLinks
+
+            // Сохранение транзакции
+            addTransaction(transaction, path)
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e("FireRepository", "Ошибка сохранения чеков и транзакции", e)
+            Result.failure(e)
+        }
+    }*/
+
     suspend fun saveChecksAndTransaction(
         checkEntities: MutableList<CheckEntity>,
         transaction: Transaction,
         path: String
     ): Result<Unit> {
         return try {
-            /*if (checkEntities.isEmpty()) {
-                addTransaction(transaction, path)
-                Result.success(Unit)
-            } else {*/
-            val links = addChecks(checkEntities)
-            // 2. Обновляем Transaction, добавляя ссылки на чеки
-            transaction.checkLinks = links
-            addTransaction(transaction, path) // Предполагается метод addTransaction
+            val firestore = FirebaseFirestore.getInstance()
+            val userId = currentUserId()
+
+            // Получение ссылки на документ транзакции
+            val transactionRef = firestore.collection("users")
+                .document(userId)
+                .collection("transaction")
+                .document(path)
+
+            firestore.runBatch { batch ->
+                // 1. Добавление чеков в батч
+                for (entity in checkEntities) {
+                    val checkRef = firestore.collection("users")
+                        .document(userId)
+                        .collection("checks")
+                        .document(entity.id)
+                    val check = entity.toCheck()
+                    batch.set(checkRef, check)
+                }
+
+                // 2. Обновление транзакции с ссылками на чеки
+                val checkLinks = checkEntities.map { it.id }.toMutableList()
+                transaction.checkLinks = checkLinks
+                batch.set(transactionRef, transaction) // Использование transactionRef
+            }.await()
 
             Result.success(Unit)
-
         } catch (e: Exception) {
-            Log.e("FireRepository", "Ошибка сохранения чеков и транзакции", e)
+            Log.e("FireRepository", "Ошибка пакетного сохранения чеков и транзакции", e)
             Result.failure(e)
         }
     }
 
-    suspend fun addChecks(checks: MutableList<CheckEntity>)
-            : MutableList<String> {
+    suspend fun addChecks(checks: MutableList<CheckEntity>): MutableList<String> {
         val checksLinks = mutableListOf<String>()
-        for (entity in checks) {
-            checksLinks.add(entity.id)
-            // Преобразуем CheckEntity в Check и сохраняем в Firestore
-            val check = entity.toCheck() // Предполагается метод toCheck()
-            firestore
-                .collection("users")
-                .document(currentUserId())
-                .collection("checks")
-                .document(entity.id)
-                .set(check)
-                .await()
+        try {
+            for (entity in checks) {
+                val check = entity.toCheck()
+                firestore.collection("users")
+                    .document(currentUserId())
+                    .collection("checks")
+                    .document(entity.id)
+                    .set(check)
+                    .await() // Ожидаем завершения операции
+                checksLinks.add(entity.id)
+            }
+        } catch (e: Exception) {
+            Log.e("FireRepository", "Ошибка при сохранении чеков", e)
+            throw e
         }
         return checksLinks
     }
 
     suspend fun addTransaction(transaction: Transaction, id: String) {
-        firestore
-            .collection("users")
-            .document(currentUserId())
-            .collection("transaction")
-            .document(id)
-            .set(transaction)
-            .await()
+        try {
+            firestore
+                .collection("users")
+                .document(currentUserId())
+                .collection("transaction")
+                .document(id)
+                .set(transaction)
+                .await()
+        } catch (e: Exception) {
+            Log.e("FireRepository", "Ошибка при сохранении транзакции", e)
+            throw e
+        }
     }
 
     suspend fun deleteTransactions(transaction: Transaction) {
@@ -449,6 +499,7 @@ class FireRepository @Inject constructor(
     }
 }
 
+
 // Из CheckEntity в Check
 fun CheckEntity.toCheck(): Check {
     return Check(
@@ -480,6 +531,7 @@ fun Check.toCheckEntity(): CheckEntity {
         id = this.id
     )
 }
+
 
 
 

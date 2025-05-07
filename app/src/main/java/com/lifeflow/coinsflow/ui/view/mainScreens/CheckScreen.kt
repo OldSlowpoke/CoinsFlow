@@ -54,8 +54,8 @@ import java.math.RoundingMode
 fun CheckScreen(vm: FireViewModel) {
     val checkItems by vm.checkItems.collectAsState()
     val products by vm.products.collectAsState()
-    val totalSum by vm.totalSum.collectAsState()
-
+    val totalSum by vm.totalSum.collectAsState()}
+/*
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -72,7 +72,7 @@ fun CheckScreen(vm: FireViewModel) {
             )
         }
         Button(
-            onClick = { vm.addChecks(vm.checkItems.value) },
+            onClick = { /*vm.addChecks(vm.checkItems.value)*/ println(checkItems.toString()) },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Сохранить")
@@ -384,7 +384,7 @@ fun ExpensesBox(
     )
 }
 
-/*private fun formatNumber(value: Double, unit: UnitType): String {
+private fun formatNumber(value: Double, unit: UnitType): String {
     return when (unit) {
         UnitType.PIECE -> value.toInt().toString() // Например: 2.0 → "2"
         else -> "%.3f".format(value) // Например: 1.234 → "1.234"

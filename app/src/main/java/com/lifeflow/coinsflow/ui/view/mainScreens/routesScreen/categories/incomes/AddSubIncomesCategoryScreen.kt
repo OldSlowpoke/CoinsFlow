@@ -60,7 +60,7 @@ fun AddSubIncomesCategoriesCategoryScreen(
                 vm.addSubIncomesCategory(category, subCategory)
                 backUp()
             },
-            enabled = subCategory.isNotBlank() || category.name.isNotBlank(),
+            enabled = subCategory.isNotBlank() && category.name.isNotBlank(),
         ) {
             Text("Сохранить")
         }

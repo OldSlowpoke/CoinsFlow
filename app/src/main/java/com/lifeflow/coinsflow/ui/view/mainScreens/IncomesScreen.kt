@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
@@ -42,6 +44,7 @@ import androidx.compose.ui.window.Popup
 import com.lifeflow.coinsflow.R
 import com.lifeflow.coinsflow.model.Account
 import com.lifeflow.coinsflow.model.ExpenseCategories
+import com.lifeflow.coinsflow.model.IncomesCategories
 import com.lifeflow.coinsflow.model.Market
 import com.lifeflow.coinsflow.model.Transaction
 import com.lifeflow.coinsflow.ui.view.convertMillisToDate
@@ -55,12 +58,10 @@ fun IncomesScreen(
 ) {
     val accounts by vm.accounts.collectAsState()
     val markets by vm.markets.collectAsState()
-    val categories by vm.expenseCategories.collectAsState()
-    val checkItems by vm.checkItems.collectAsState()
+    val categories by vm.incomesCategories.collectAsState()
 
     var accountState by remember { mutableStateOf(Account()) }
-    var marketState by remember { mutableStateOf(Market()) }
-    var categoryState by remember { mutableStateOf(ExpenseCategories()) }
+    var categoryState by remember { mutableStateOf(IncomesCategories()) }
     var totalState by remember { mutableStateOf("") }
     var subCategory by remember { mutableStateOf("") }
 
@@ -95,16 +96,6 @@ fun IncomesScreen(
 
         HorizontalDivider()
 
-        // Поле Актив
-        IncomesMarketBox(
-            market = marketState,
-            onAssetChange = { newValue -> marketState = newValue },
-            markets = markets
-
-        )
-
-        HorizontalDivider()
-
         // Поле Категория
         IncomesCategoryBox(
             category = categoryState,
@@ -112,12 +103,12 @@ fun IncomesScreen(
             categories = categories,
         )
 
-        if (categoryState.subExpenseCategories.isNotEmpty()){
+        if (categoryState.subIncomesCategories.isNotEmpty()) {
             // Показываем подкатегорию только если у категории есть подкатегории
             HorizontalDivider()
 
             IncomesSubCategoryBox(
-                subCategories = categoryState.subExpenseCategories,
+                subCategories = categoryState.subIncomesCategories,
                 selectedSubCategory = subCategory,
                 onSubCategoryChange = { newValue -> subCategory = newValue }
             )
@@ -139,15 +130,13 @@ fun IncomesScreen(
         Button(
             onClick = {
                 id = vm.getLinkOnFirePath("transactions")
-                vm.saveChecksAndTransaction(
-                    checkItems,
+                vm.addTransactions(
                     Transaction(
                         date = selectedDate,
                         total = totalState.toDouble(),
                         type = "income",
                         account = accountState.accountName,
                         category = categoryState.name,
-                        market = marketState.name,
                         id = id,
                         subCategory = subCategory
                     ),
@@ -157,7 +146,10 @@ fun IncomesScreen(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp)
+                .padding(vertical = 16.dp),
+            enabled = accountState.accountName.isNotBlank()
+                    && categoryState.name.isNotBlank()
+                    && selectedDate.isNotBlank()
         ) {
             Text("Сохранить")
         }
@@ -246,57 +238,6 @@ fun IncomesDateBox(
 }
 
 @Composable
-fun IncomesMarketBox(
-    market: Market,
-    onAssetChange: (Market) -> Unit,
-    markets: List<Market>
-) {
-    var isActivityDropdownOpen by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { isActivityDropdownOpen = true }
-            .padding(vertical = 8.dp)
-    ) {
-        TextField(
-            value = market.name,
-            placeholder = { Text("Выберите магазин") },
-            onValueChange = { },
-            label = { Text("Магазин") },
-            readOnly = true,
-            trailingIcon = {
-                IconButton(onClick = { isActivityDropdownOpen = !isActivityDropdownOpen }) {
-                    Icon(
-                        imageVector = ImageVector
-                            .vectorResource(R.drawable.baseline_keyboard_arrow_down_24),
-                        contentDescription = "Выбор категории"
-                    )
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(64.dp)
-        )
-        DropdownMenu(
-            expanded = isActivityDropdownOpen,
-            onDismissRequest = { isActivityDropdownOpen = false },
-            offset = DpOffset(x = 250.dp, y = 5.dp)
-        ) {
-            markets.forEach { market ->
-                DropdownMenuItem(
-                    text = { Text(market.name) },
-                    onClick = {
-                        onAssetChange(market)
-                        isActivityDropdownOpen = false
-                    }
-                )
-            }
-        }
-    }
-}
-
-@Composable
 fun IncomesAccountBox(
     account: Account,
     onAccountChange: (Account) -> Unit,
@@ -349,9 +290,9 @@ fun IncomesAccountBox(
 
 @Composable
 fun IncomesCategoryBox(
-    category: ExpenseCategories,
-    onCategoryChange: (ExpenseCategories) -> Unit,
-    categories: List<ExpenseCategories>,
+    category: IncomesCategories,
+    onCategoryChange: (IncomesCategories) -> Unit,
+    categories: List<IncomesCategories>,
 ) {
     var isCategoryDropdownOpen by remember { mutableStateOf(false) }
 

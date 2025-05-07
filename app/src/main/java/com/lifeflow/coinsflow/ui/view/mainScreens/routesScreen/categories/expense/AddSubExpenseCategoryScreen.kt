@@ -59,7 +59,7 @@ fun AddSubExpenseCategoryScreen(
                 vm.addSubExpenseCategory(category, subCategory)
                 backUp()
             },
-            enabled = subCategory.isNotBlank() || category.name.isNotBlank(),
+            enabled = subCategory.isNotBlank() && category.name.isNotBlank(),
         ) {
             Text("Сохранить")
         }

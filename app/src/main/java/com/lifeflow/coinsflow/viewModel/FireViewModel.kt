@@ -104,6 +104,12 @@ class FireViewModel @Inject constructor(
             if (it.id == id) it.copy(count = newQuantity) else it
         }.toMutableList()
     }
+    /*//Обновлление Даты
+    fun updateDate(id: String, newDate: String) {
+        _checkItems.value = _checkItems.value.map {
+            if (it.id == id) it.copy(date = newDate) else it
+        }.toMutableList()
+    }*/
 
     // Обновление цены за единицу
     fun updatePrice(id: String, newPrice: BigDecimal) {
@@ -285,6 +291,14 @@ class FireViewModel @Inject constructor(
 
     fun deleteMarket(market: Market) = viewModelScope.launch {
         fireRepository.deleteMarket(market)
+    }
+
+    fun getLinkOnChecks(checkEntities: MutableList<CheckEntity>, transaction: Transaction) {
+        // Преобразуем список CheckEntity в список ID
+        val links: MutableList<String> = checkEntities.map { it.id }.toMutableList()
+
+        // Присваиваем транзакции новый список ссылок
+        transaction.checkLinks = links
     }
 }
 

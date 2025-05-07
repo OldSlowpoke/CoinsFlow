@@ -6,5 +6,6 @@ data class Check (
     var count: Long = 0,
     val discount: Boolean = false,
     val id: String = "",
-    var unit: String = UnitType.PIECE.name
+    var unit: String = UnitType.PIECE.name,
+    val date: String = "",
 )
