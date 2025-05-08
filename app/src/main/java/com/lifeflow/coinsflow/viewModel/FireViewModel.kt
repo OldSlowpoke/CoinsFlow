@@ -14,6 +14,7 @@ import com.lifeflow.coinsflow.model.repository.FireRepository
 import com.lifeflow.coinsflow.model.uiState.AuthUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
@@ -70,6 +71,13 @@ class FireViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = 0.0
     )
+
+    val totalBalance: Flow<Double> = accounts.map { accounts ->
+        accounts.fold(BigDecimal.ZERO) { acc, account ->
+            acc + account.initialAmount.toBigDecimal()
+        }.setScale(2, RoundingMode.HALF_UP)
+            .toDouble()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 
     fun addChecks(checks: MutableList<CheckEntity>) = viewModelScope.launch {
         fireRepository.addChecks(checks)
@@ -198,9 +206,6 @@ class FireViewModel @Inject constructor(
     }
 
     //Transactions
-    fun addTransactions(transaction: Transaction, path: String) = viewModelScope.launch {
-        fireRepository.addTransaction(transaction, path)
-    }
 
     fun deleteTransactions(transaction: Transaction) = viewModelScope.launch {
         fireRepository.deleteTransactions(transaction)

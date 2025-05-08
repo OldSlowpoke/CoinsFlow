@@ -130,7 +130,8 @@ fun IncomesScreen(
         Button(
             onClick = {
                 id = vm.getLinkOnFirePath("transactions")
-                vm.addTransactions(
+                vm.saveChecksAndTransaction(
+                    mutableListOf(),
                     Transaction(
                         date = selectedDate,
                         total = totalState.toDouble(),

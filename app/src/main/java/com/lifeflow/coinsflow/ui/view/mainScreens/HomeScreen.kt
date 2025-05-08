@@ -55,14 +55,23 @@ fun HomeScreen(
     navOnRoutes: () -> Unit
 ) {
     val transactions by vm.transactions.collectAsState()
+    val totalBalance by vm.totalBalance.collectAsState(initial = 0.0)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
     ) {
 
-        MainBar(navOnExpenseScreen, navOnIncomeScreen, navOnRoutes)
-        Transactions(transactions, vm)
+        MainBar(
+            navOnExpenseScreen,
+            navOnIncomeScreen,
+            navOnRoutes,
+            totalBalance
+        )
+        Transactions(
+            transactions,
+            vm
+        )
     }
 }
 
@@ -70,7 +79,8 @@ fun HomeScreen(
 fun MainBar(
     navOnExpenseScreen: () -> Unit,
     navOnIncomeScreen: () -> Unit,
-    navOnRoutes: () -> Unit
+    navOnRoutes: () -> Unit,
+    totalBalance: Double // Передаем общий баланс
 ) {
     Card(
         modifier = Modifier
@@ -94,13 +104,13 @@ fun MainBar(
             ) {
                 Column {
                     Text(
-                        text = "Баланс (Руб):",
-                        fontSize = 15.sp,
+                        text = "Баланс",
+                        fontSize = 25.sp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
                     Text(
-                        text = "100 000",
+                        text = "%.2f ₽".format(totalBalance),
                         fontSize = 50.sp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()

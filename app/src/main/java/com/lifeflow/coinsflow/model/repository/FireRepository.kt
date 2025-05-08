@@ -99,7 +99,7 @@ class FireRepository @Inject constructor(
     }*/
 
     suspend fun saveChecksAndTransaction(
-        checkEntities: MutableList<CheckEntity>,
+        checkEntities: MutableList<CheckEntity> = mutableListOf(),
         transaction: Transaction,
         path: String
     ): Result<Unit> {
@@ -113,10 +113,14 @@ class FireRepository @Inject constructor(
                     .document(path)
                 firestore.runBatch { batch ->
                     batch.set(transactionRef, transaction) // Использование transactionRef
-                }.await()
 
+                }.await()
+                updateAccountBalance(
+                    transaction.account,
+                    transaction.total.toBigDecimal()
+                )
                 Result.success(Unit)
-            }else{
+            } else {
                 val userId = currentUserId()
 
                 // Добавьте дату транзакции в каждый чек
@@ -146,7 +150,10 @@ class FireRepository @Inject constructor(
                     transaction.checkLinks = checkLinks
                     batch.set(transactionRef, transaction) // Использование transactionRef
                 }.await()
-
+                updateAccountBalance(
+                    transaction.account,
+                    transaction.total.toBigDecimal()
+                )
                 Result.success(Unit)
             }
         } catch (e: Exception) {
@@ -175,29 +182,31 @@ class FireRepository @Inject constructor(
         return checksLinks
     }
 
-    suspend fun addTransaction(transaction: Transaction, id: String) {
+    suspend fun deleteTransactions(transaction: Transaction) {
         try {
-            firestore
-                .collection("users")
-                .document(currentUserId())
-                .collection("transaction")
-                .document(id)
-                .set(transaction)
-                .await()
+            val userId = currentUserId()
+            val transactionRef = firestore.collection("users").document(userId)
+                .collection("transaction").document(transaction.id)
+
+            // Удаляем связанные чеки
+            val checkRefs = transaction.checkLinks.map { checkId ->
+                firestore.collection("users").document(userId).collection("checks")
+                    .document(checkId)
+            }
+
+            firestore.runBatch { batch ->
+                checkRefs.forEach { batch.delete(it) }
+                batch.delete(transactionRef)
+            }.await()
+            updateAccountBalance(
+                transaction.account,
+                transaction.total.toBigDecimal(),
+                deleteTransaction = true
+            )
         } catch (e: Exception) {
-            Log.e("FireRepository", "Ошибка при сохранении транзакции", e)
+            Log.e("FireRepository", "Ошибка при удалении транзакции", e)
             throw e
         }
-    }
-
-    suspend fun deleteTransactions(transaction: Transaction) {
-        firestore
-            .collection("users")
-            .document(currentUserId())
-            .collection("transaction")
-            .document(transaction.id)
-            .delete()
-            .await()
     }
 
     fun getLinkOnFirePath(path: String): String {
@@ -514,6 +523,51 @@ class FireRepository @Inject constructor(
             .document(market.id)
             .delete()
             .await()
+    }
+
+    private suspend fun updateAccountBalance(
+        accountName: String,
+        amount: BigDecimal,
+        deleteTransaction: Boolean = false
+    ) {
+        try {
+            val userId = currentUserId()
+            val accountRef = firestore
+                .collection("users")
+                .document(userId)
+                .collection("accounts")
+                .whereEqualTo("accountName", accountName)
+                .get()
+                .await()
+                .firstOrNull() ?: return
+
+            val currentBalance =
+                accountRef.toObject(Account::class.java).initialAmount.toBigDecimal()
+                    ?: BigDecimal.ZERO
+
+            // Основная формула
+            val newBalance = if (deleteTransaction) {
+                currentBalance.subtract(amount)
+            } else {
+                currentBalance.add(amount)
+            }
+
+            // Проверка на отрицательный баланс
+            if (newBalance.signum() == -1) {
+                throw IllegalStateException("Баланс не может быть отрицательным")
+            }
+
+
+            firestore.collection("users")
+                .document(userId)
+                .collection("accounts")
+                .document(accountRef.id)
+                .update("initialAmount", newBalance.toDouble())
+                .await()
+
+        } catch (e: Exception) {
+            Log.e("FireRepository", "Ошибка обновления баланса счета", e)
+        }
     }
 }
 
