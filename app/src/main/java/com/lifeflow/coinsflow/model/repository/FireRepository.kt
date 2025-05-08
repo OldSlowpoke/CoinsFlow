@@ -104,37 +104,51 @@ class FireRepository @Inject constructor(
         path: String
     ): Result<Unit> {
         return try {
-            val userId = currentUserId()
+            // Проверка на пустой список чеков
+            if (checkEntities.isEmpty()) {
+                val userId = currentUserId()
+                val transactionRef = firestore.collection("users")
+                    .document(userId)
+                    .collection("transaction")
+                    .document(path)
+                firestore.runBatch { batch ->
+                    batch.set(transactionRef, transaction) // Использование transactionRef
+                }.await()
 
-            // Добавьте дату транзакции в каждый чек
-            val checksWithDate = checkEntities.map { entity ->
-                entity.copy(date = transaction.date) // Устанавливаем дату транзакции
-            }
+                Result.success(Unit)
+            }else{
+                val userId = currentUserId()
 
-            // Получение ссылки на документ транзакции
-            val transactionRef = firestore.collection("users")
-                .document(userId)
-                .collection("transaction")
-                .document(path)
-
-            firestore.runBatch { batch ->
-                // 1. Добавление чеков в батч
-                for (entity in checksWithDate) {
-                    val checkRef = firestore.collection("users")
-                        .document(userId)
-                        .collection("checks")
-                        .document(entity.id)
-                    val check = entity.toCheck()
-                    batch.set(checkRef, check)
+                // Добавьте дату транзакции в каждый чек
+                val checksWithDate = checkEntities.map { entity ->
+                    entity.copy(date = transaction.date) // Устанавливаем дату транзакции
                 }
 
-                // 2. Обновление транзакции с ссылками на чеки
-                val checkLinks = checksWithDate.map { it.id }.toMutableList()
-                transaction.checkLinks = checkLinks
-                batch.set(transactionRef, transaction) // Использование transactionRef
-            }.await()
+                // Получение ссылки на документ транзакции
+                val transactionRef = firestore.collection("users")
+                    .document(userId)
+                    .collection("transaction")
+                    .document(path)
 
-            Result.success(Unit)
+                firestore.runBatch { batch ->
+                    // 1. Добавление чеков в батч
+                    for (entity in checksWithDate) {
+                        val checkRef = firestore.collection("users")
+                            .document(userId)
+                            .collection("checks")
+                            .document(entity.id)
+                        val check = entity.toCheck()
+                        batch.set(checkRef, check)
+                    }
+
+                    // 2. Обновление транзакции с ссылками на чеки
+                    val checkLinks = checksWithDate.map { it.id }.toMutableList()
+                    transaction.checkLinks = checkLinks
+                    batch.set(transactionRef, transaction) // Использование transactionRef
+                }.await()
+
+                Result.success(Unit)
+            }
         } catch (e: Exception) {
             Log.e("FireRepository", "Ошибка пакетного сохранения чеков и транзакции", e)
             Result.failure(e)
