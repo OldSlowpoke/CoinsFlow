@@ -52,19 +52,14 @@ class FireViewModel @Inject constructor(
 
     val totalSum: StateFlow<Double> = _checkItems.map { items ->
         if (items.isEmpty()) {
-            BigDecimal.ZERO.toDouble() // Возвращаем 0, если список пустой
+            BigDecimal.ZERO.toDouble()
         } else {
-            val totalBigDecimal = items
-                .map { item ->
-                    val qty = item.count.toString().toBigDecimalOrNull() ?: BigDecimal.ZERO
-                    val unitPrice = item.amount.toString().toBigDecimalOrNull() ?: BigDecimal.ZERO
-                    val subtotal = unitPrice.multiply(qty)
-                    subtotal
-                }
-                .reduce { acc, current -> acc.add(current) } // Суммируем все BigDecimal
+            // Суммируем только поле `amount` каждого чека
+            val totalBigDecimal = items.map { item ->
+                item.amount // Используем напрямую `amount` (уже в формате BigDecimal)
+            }.reduce { acc, current -> acc.add(current) }
                 .setScale(2, RoundingMode.HALF_UP) // Округляем до 2 знаков
-
-            totalBigDecimal.toDouble() // Конвертируем в Double только для отображения
+            totalBigDecimal.toDouble()
         }
     }.stateIn(
         scope = viewModelScope,
@@ -95,6 +90,15 @@ class FireViewModel @Inject constructor(
         }
     }
 
+    private fun calculateUnitPrice(amount: BigDecimal, quantity: BigDecimal, unit: UnitType): BigDecimal {
+        if (quantity.compareTo(BigDecimal.ZERO) == 0) return BigDecimal.ZERO
+
+        return when (unit) {
+            UnitType.PIECE -> amount.divide(quantity, 2, RoundingMode.HALF_UP)
+            UnitType.KILOGRAM, UnitType.LITER -> amount.divide(quantity, 2, RoundingMode.HALF_UP)
+        }
+    }
+
     // Обновление productId и productName
     fun updateProduct(id: String, product: Product) {
         _checkItems.value = _checkItems.value.map {
@@ -108,21 +112,25 @@ class FireViewModel @Inject constructor(
 
     // Обновление количества
     fun updateQuantity(id: String, newQuantity: BigDecimal) {
-        _checkItems.value = _checkItems.value.map {
-            if (it.id == id) it.copy(count = newQuantity) else it
+        _checkItems.value = _checkItems.value.map { item ->
+            if (item.id == id) {
+                val updatedItem = item.copy(count = newQuantity)
+                updatedItem.copy(unitPrice = calculateUnitPrice(updatedItem.amount, newQuantity, updatedItem.unit))
+            } else {
+                item
+            }
         }.toMutableList()
     }
-    /*//Обновлление Даты
-    fun updateDate(id: String, newDate: String) {
-        _checkItems.value = _checkItems.value.map {
-            if (it.id == id) it.copy(date = newDate) else it
-        }.toMutableList()
-    }*/
 
     // Обновление цены за единицу
     fun updatePrice(id: String, newPrice: BigDecimal) {
-        _checkItems.value = _checkItems.value.map {
-            if (it.id == id) it.copy(amount = newPrice) else it
+        _checkItems.value = _checkItems.value.map { item ->
+            if (item.id == id) {
+                val updatedItem = item.copy(amount = newPrice)
+                updatedItem.copy(unitPrice = calculateUnitPrice(newPrice, updatedItem.count, updatedItem.unit))
+            } else {
+                item
+            }
         }.toMutableList()
     }
 

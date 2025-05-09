@@ -608,6 +608,11 @@ fun CheckItemRow(
 
     var isDropdownOpen by remember { mutableStateOf(false) }
 
+    // Общая сумма
+    var unitPrice by remember(checkItem.unitPrice) {
+        mutableStateOf(checkItem.unitPrice)
+    }
+
     // Синхронизация при изменении checkItem
     LaunchedEffect(checkItem) {
         quantity = if (checkItem.count.compareTo(BigDecimal.ZERO) == 0) ""
@@ -616,6 +621,7 @@ fun CheckItemRow(
         else checkItem.amount.toString()
         selectedProduct = products.find { it.name == checkItem.productName } ?: Product("", "")
         selectedUnit = checkItem.unit
+        unitPrice = checkItem.unitPrice
     }
 
     Card(
@@ -717,38 +723,14 @@ fun CheckItemRow(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Общая сумма
-                val total = remember(quantity, price, selectedUnit) {
-                    derivedStateOf {
-                        val qty = quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                        val unitPrice = price.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                        val subtotal = unitPrice.multiply(qty)
-                        val total = subtotal.setScale(2, RoundingMode.HALF_UP)
-                        total.toDouble()
-                    }
-                    /*when (selectedUnit) {
-                        UnitType.PIECE -> derivedStateOf {
-                            val qty = quantity.toDoubleOrNull() ?: 0.0
-                            val unitPrice = price.toDoubleOrNull() ?: 0.0
-                            val total = qty * unitPrice
-                            total
-                        }
-                        else -> derivedStateOf {
-                            val priceForKg = price.toDoubleOrNull() ?: 0.0
-                            val priceForGram = if (priceForKg >= 0) priceForKg / 1000 else 0.0
-                            val qty = quantity.toDoubleOrNull() ?: 0.0
-                            val total = qty * priceForGram
-                            total
-                        }
-                    }*/
-                }
-                Text("Итого: ${total.value}")
+                Text("Цена за ${checkItem.unit}: ${checkItem.unitPrice}")
                 IconButton(
                     onClick = onRemoveClick,
                 ) {
                     Icon(Icons.Filled.Delete, contentDescription = "Удалить категорию")
                 }
             }
+            Text("Итого: $price")
         }
     }
 }

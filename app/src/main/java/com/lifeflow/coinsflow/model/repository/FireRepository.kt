@@ -587,7 +587,11 @@ fun CheckEntity.toCheck(): Check {
         discount = this.discount,
         unit = this.unit.name, // Преобразуем UnitType в String
         id = this.id,
-        date = this.date
+        date = this.date,
+        unitPrice = (this.unitPrice.multiply(BigDecimal("100"))) // Преобразование BigDecimal -> Long
+            .setScale(0, RoundingMode.HALF_UP)
+            .toBigIntegerExact()
+            .toLong()
     )
 }
 
@@ -602,7 +606,8 @@ fun Check.toCheckEntity(): CheckEntity {
         discount = this.discount,
         unit = UnitType.valueOf(this.unit), // Преобразуем String в UnitType
         id = this.id,
-        date = this.date
+        date = this.date,
+        unitPrice = BigDecimal.valueOf(this.unitPrice).divide(BigDecimal("100"), 2, RoundingMode.HALF_UP) // Преобразование Long -> BigDecimal
     )
 }
 

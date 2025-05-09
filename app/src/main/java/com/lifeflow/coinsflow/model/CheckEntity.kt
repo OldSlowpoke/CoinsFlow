@@ -11,4 +11,5 @@ data class CheckEntity(
     var discount: Boolean = false,
     var unit: UnitType = UnitType.PIECE,
     val date: String = "",
+    val unitPrice: BigDecimal = BigDecimal.ZERO // Цена за единицу измерения (в BigDecimal)
 )

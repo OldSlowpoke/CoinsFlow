@@ -57,7 +57,6 @@ fun IncomesScreen(
     vm: FireViewModel
 ) {
     val accounts by vm.accounts.collectAsState()
-    val markets by vm.markets.collectAsState()
     val categories by vm.incomesCategories.collectAsState()
 
     var accountState by remember { mutableStateOf(Account()) }
