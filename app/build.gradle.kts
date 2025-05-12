@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.lifeflow.coinsflow"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -78,4 +78,5 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation)
     implementation(libs.firebase.auth)
+    implementation(libs.philJay)
 }

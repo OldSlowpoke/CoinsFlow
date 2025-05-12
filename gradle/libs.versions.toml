@@ -15,6 +15,7 @@ vMSVersion = "2.8.7"
 hiltVersion = "2.55"
 kspVersion = "2.0.21-1.0.27"
 hiltNavVer = "1.2.0"
+philJayVer = "2.1.0"
 
 
 [libraries]
@@ -40,6 +41,7 @@ vms = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.
 hilt-android = { group = "com.google.dagger", name = "hilt-android" , version.ref = "hiltVersion"}
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler" , version.ref = "hiltVersion"}
 hilt-navigation = { group = "androidx.hilt", name = "hilt-navigation-compose" , version.ref = "hiltNavVer"}
+philJay = { group = "co.yml", name = "ycharts" , version.ref = "philJayVer"}
 
 
 

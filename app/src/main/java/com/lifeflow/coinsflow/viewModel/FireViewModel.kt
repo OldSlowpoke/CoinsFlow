@@ -1,5 +1,6 @@
 package com.lifeflow.coinsflow.viewModel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lifeflow.coinsflow.model.Account
@@ -10,6 +11,7 @@ import com.lifeflow.coinsflow.model.Product
 import com.lifeflow.coinsflow.model.Transaction
 import com.lifeflow.coinsflow.model.UnitType
 import com.lifeflow.coinsflow.model.CheckEntity
+import com.lifeflow.coinsflow.model.MonthlyStat
 import com.lifeflow.coinsflow.model.repository.FireRepository
 import com.lifeflow.coinsflow.model.uiState.AuthUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,6 +26,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
@@ -312,6 +316,74 @@ class FireViewModel @Inject constructor(
 
         // Присваиваем транзакции новый список ссылок
         transaction.checkLinks = links
+    }
+
+
+    //Statistics
+    fun calculateTrend(stats: List<MonthlyStat>, period: Int = 3): List<Double> {
+        return stats.windowed(period, 1, partialWindows = true) { window ->
+            window.map { it.balance }.average()
+        }
+    }
+
+    fun calculateMonthlyStats(transactions: List<Transaction>): Map<String, MonthlyStat> {
+        // Группируем транзакции по месяцам
+        val grouped = transactions.groupBy { transaction ->
+            try {
+                // Пытаемся распарсить дату с разными форматами
+                val date: LocalDate = try {
+                    // Попробуем формат "dd-MM-yyyy"
+                    val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+                    LocalDate.parse(transaction.date, formatter)
+                } catch (e: Exception) {
+                    // Если не получилось, пробуем "dd/MM/yyyy"
+                    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                    LocalDate.parse(transaction.date, formatter)
+                }
+
+                // Формируем ключ в формате "YYYY-MM" (всегда 2 цифры для месяца)
+                "${date.year}-${String.format("%02d", date.monthValue)}"
+            } catch (e: Exception) {
+                // Логируем ошибку и кладём такие транзакции в группу "invalid"
+                Log.e("DateParsing", "Ошибка парсинга даты: ${transaction.date}", e)
+                "invalid"
+            }
+        }
+
+        // Убираем группу с некорректными датами
+        val validGrouped = grouped.filterKeys { it != "invalid" }
+
+        // Сортируем месяцы в хронологическом порядке
+        val sortedMonths = validGrouped.keys.sortedWith(compareBy {
+            // Парсим "YYYY-MM" в LocalDate для корректной сортировки
+            LocalDate.parse("$it-01", DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+        })
+
+        // Создаём результирующую карту с метриками
+        val result = mutableMapOf<String, MonthlyStat>()
+
+        for (month in sortedMonths) {
+            val transactionsInMonth = validGrouped[month] ?: continue
+
+            // Считаем доходы и расходы
+            val income = transactionsInMonth
+                .filter { it.type == "income" }
+                .sumOf { it.total }
+
+            val expense = transactionsInMonth
+                .filter { it.type == "expense" }
+                .sumOf { it.total }
+
+            // Сохраняем результат
+            result[month] = MonthlyStat(
+                month = month,
+                income = income,
+                expense = expense,
+                balance = income + expense
+            )
+        }
+
+        return result
     }
 }
 

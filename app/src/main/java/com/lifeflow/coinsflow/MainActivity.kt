@@ -153,7 +153,7 @@ fun MainScreen() {
                     },
                 )
             }
-            composable(NavRoutes.Statistics.name) { StatisticsScreen() }
+            composable(NavRoutes.Statistics.name) { StatisticsScreen(vm) }
             composable(NavRoutes.Profile.name) {
                 ProfileScreen(
                     vm,
