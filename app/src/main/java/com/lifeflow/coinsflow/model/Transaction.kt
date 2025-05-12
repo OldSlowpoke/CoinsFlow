@@ -10,5 +10,5 @@ data class Transaction(
     val subCategory: String = "",
     val total: Double = 0.0,
     var checkLinks: MutableList<String> = mutableListOf(),
-    val check: MutableList<CheckEntity> = mutableListOf()
+    var check: MutableList<CheckEntity> = mutableListOf()
 )

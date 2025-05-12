@@ -1,7 +1,6 @@
 package com.lifeflow.coinsflow.model.repository
 
 import android.util.Log
-import androidx.compose.runtime.currentComposer
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FieldValue
@@ -19,6 +18,7 @@ import com.lifeflow.coinsflow.model.UnitType
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -35,6 +35,7 @@ class FireRepository @Inject constructor(
     private var incomesCategoriesListener: ListenerRegistration? = null
     private var accountsListener: ListenerRegistration? = null
     private var marketsListener: ListenerRegistration? = null
+    private var checksListener: ListenerRegistration? = null
 
     // Метод для остановки всех слушателей
     fun stopAllListeners() {
@@ -44,6 +45,7 @@ class FireRepository @Inject constructor(
         accountsListener?.remove()
         marketsListener?.remove()
         incomesCategoriesListener?.remove()
+        checksListener?.remove()
 
         transactionListener = null
         productListener = null
@@ -51,6 +53,7 @@ class FireRepository @Inject constructor(
         accountsListener = null
         marketsListener = null
         incomesCategoriesListener = null
+        checksListener = null
     }
 
     //Transactions
@@ -72,31 +75,42 @@ class FireRepository @Inject constructor(
         awaitClose { transactionListener?.remove() }
     }
 
-    /*suspend fun saveChecksAndTransaction(
-        checkEntities: MutableList<CheckEntity>,
-        transaction: Transaction,
-        path: String
-    ): Result<Unit> {
-        return try {
-            // Проверка на пустой список чеков
-            if (checkEntities.isEmpty()) {
-                Log.w("FireViewModel", "Попытка сохранить транзакцию без чеков")
-                return Result.failure(IllegalStateException("Нет чеков для сохранения"))
+    // Функция для получения чеков по ID транзакции
+    suspend fun getChecksForTransaction(checkIds: List<String>): List<Check> {
+        val userId = currentUserId()
+        val checks = mutableListOf<Check>()
+        for (id in checkIds) {
+            val doc = firestore.collection("users").document(userId)
+                .collection("checks").document(id).get().await()
+            if (doc.exists()) {
+                checks.add(doc.toObject(Check::class.java)!!)
             }
-
-            // Сохранение чеков и получение их ссылок
-            val checksLinks = addChecks(checkEntities)
-            transaction.checkLinks = checksLinks
-
-            // Сохранение транзакции
-            addTransaction(transaction, path)
-
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e("FireRepository", "Ошибка сохранения чеков и транзакции", e)
-            Result.failure(e)
         }
-    }*/
+        return checks
+    }
+
+    //Checks
+    fun getChecks(): Flow<List<CheckEntity>> = callbackFlow {
+        val snapshotListener = firestore
+            .collection("users")
+            .document(currentUserId())
+            .collection("checks")
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    close(e)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null && !snapshot.isEmpty) {
+                    val checks = snapshot.toObjects(Check::class.java)
+                    val checkEntity = checks.map { check ->
+                        check.toCheckEntity()
+                    }
+                    trySend(checkEntity)
+
+                }
+            }
+        awaitClose { checksListener?.remove() }
+    }
 
     suspend fun saveChecksAndTransaction(
         checkEntities: MutableList<CheckEntity> = mutableListOf(),
@@ -285,7 +299,10 @@ class FireRepository @Inject constructor(
             .await()
     }
 
-    suspend fun addSubExpenseCategory(expenseCategories: ExpenseCategories, subCategory: String) {
+    suspend fun addSubExpenseCategory(
+        expenseCategories: ExpenseCategories,
+        subCategory: String
+    ) {
         try {
             firestore
                 .collection("users")
@@ -419,7 +436,8 @@ class FireRepository @Inject constructor(
     suspend fun register(email: String, password: String): Result<FirebaseUser> =
         try {
             // Шаг 1: Регистрация пользователя в Firebase Auth
-            val authResult = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+            val authResult =
+                firebaseAuth.createUserWithEmailAndPassword(email, password).await()
             val user = authResult.user ?: throw Exception("User creation failed")
 
             // Шаг 2: Создание документа пользователя в Firestore
@@ -607,7 +625,11 @@ fun Check.toCheckEntity(): CheckEntity {
         unit = UnitType.valueOf(this.unit), // Преобразуем String в UnitType
         id = this.id,
         date = this.date,
-        unitPrice = BigDecimal.valueOf(this.unitPrice).divide(BigDecimal("100"), 2, RoundingMode.HALF_UP) // Преобразование Long -> BigDecimal
+        unitPrice = BigDecimal.valueOf(this.unitPrice).divide(
+            BigDecimal("100"),
+            2,
+            RoundingMode.HALF_UP
+        ) // Преобразование Long -> BigDecimal
     )
 }
 

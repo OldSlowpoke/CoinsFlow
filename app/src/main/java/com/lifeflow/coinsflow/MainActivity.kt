@@ -55,6 +55,7 @@ import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories.income
 import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.markets.AddMarketsScreen
 import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.markets.MarketsScreen
 import com.lifeflow.coinsflow.ui.view.profileScreens.AddAccountScreen
+import com.lifeflow.coinsflow.ui.view.statisticsScreens.BudgetsScreen
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -92,19 +93,6 @@ fun MainScreen() {
     // Get current back stack entry
     val backStackEntry by navController.currentBackStackEntryAsState()
 
-    // Determine the current screen based on the route
-    /*val currentScreen = when (currentRoute) {
-        NavRoutes.Home.route -> NavRoutes.Home.title
-        NavRoutes.Contacts.route -> NavRoutes.Contacts.title
-        NavRoutes.About.route -> NavRoutes.About.title
-        NavRoutes.Expenses.route -> NavRoutes.Expenses.title
-        NavRoutes.Profile.route -> NavRoutes.Profile.title
-        NavRoutes.Statistics.route -> NavRoutes.Statistics.title
-        NavRoutes.Check.route -> NavRoutes.Check.title
-        NavRoutes.Incomes.route -> NavRoutes.Incomes.title
-        NavRoutes.Routes.route -> NavRoutes.Routes.title
-        else -> NavRoutes.Home.title // Default case if route doesn't match any
-    }*/
     val currentScreen = NavRoutes.valueOf(
         backStackEntry?.destination?.route ?: NavRoutes.Transactions.name
     )
@@ -153,7 +141,14 @@ fun MainScreen() {
                     },
                 )
             }
-            composable(NavRoutes.Statistics.name) { StatisticsScreen(vm) }
+            composable(NavRoutes.Statistics.name) {
+                StatisticsScreen(
+                    vm,
+                    navToBudgets = {
+                        navController.navigate(NavRoutes.Budgets.name)
+                    }
+                )
+            }
             composable(NavRoutes.Profile.name) {
                 ProfileScreen(
                     vm,
@@ -283,6 +278,11 @@ fun MainScreen() {
                     vm,
                     backUp = { navController.popBackStack() })
             }
+            composable(NavRoutes.Budgets.name) {
+                BudgetsScreen(
+
+                )
+            }
         }
     }
 }
@@ -365,18 +365,6 @@ data class BarItem(
     val route: String
 )
 
-/*sealed class NavRoutes(val route: String, val title: String) {
-    data object Home : NavRoutes("home", "Home")
-    data object Contacts : NavRoutes("contacts", "Contacts")
-    data object About : NavRoutes("about", "About")
-    data object Expenses : NavRoutes("expenses", "Expenses")
-    data object Profile : NavRoutes("profile", "Profile")
-    data object Statistics : NavRoutes("statistics", "Statistics")
-    data object Check : NavRoutes("check", "Check")
-    data object Incomes : NavRoutes("incomes", "Incomes")
-    data object Routes : NavRoutes("routes", "Routes")
-}*/
-
 enum class NavRoutes(@StringRes val route: Int) {
     Transactions(route = R.string.app_name),
     Statistics(route = R.string.statistics),
@@ -398,6 +386,7 @@ enum class NavRoutes(@StringRes val route: Int) {
     Login(route = R.string.login),
     Markets(route = R.string.markets),
     AddMarket(route = R.string.add_market),
+    Budgets(route = R.string.budgets)
 }
 
 @Preview(showBackground = true)
