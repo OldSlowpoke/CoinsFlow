@@ -66,8 +66,9 @@ fun StatisticsScreen(vm: FireViewModel, navToBudgets: () -> Unit) {
     //val statsList = statsMap.values.sortedBy { it.month }
 
     val customItems = listOf<@Composable () -> Unit>(
-        // Card 1: Бюджеты
+
         {
+            // Card 1: Бюджеты
             Box(
                 modifier = Modifier.clickable(
                     onClick = {
@@ -91,7 +92,6 @@ fun StatisticsScreen(vm: FireViewModel, navToBudgets: () -> Unit) {
             // Card 2: Баланс по месяцам
             StatsCard(title = "Баланс по месяцам") { selectProduct, filter ->
                 IncomeExpenseBarChart(
-                    modifier = Modifier.fillMaxWidth(),
                     statsMap = vm.calculateMonthlyStats(transactions, filter),
                 )
             }
@@ -273,7 +273,6 @@ fun TestScreen(
 // Гистограмма доходов/расходов
 @Composable
 fun IncomeExpenseBarChart(
-    modifier: Modifier = Modifier,
     statsMap: Map<String, MonthlyStat>
 ) {
     val stats = statsMap.values.sortedBy { it.month }
@@ -761,7 +760,6 @@ fun TopProductChart(sortedStats: List<ProductStat>) {
     )
 
     BarChart(modifier = Modifier.height(700.dp), barChartData = barChartData)
-
 }
 
 @Composable

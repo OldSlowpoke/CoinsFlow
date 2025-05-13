@@ -55,6 +55,7 @@ import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.categories.income
 import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.markets.AddMarketsScreen
 import com.lifeflow.coinsflow.ui.view.mainScreens.routesScreen.markets.MarketsScreen
 import com.lifeflow.coinsflow.ui.view.profileScreens.AddAccountScreen
+import com.lifeflow.coinsflow.ui.view.statisticsScreens.AddBudgetScreen
 import com.lifeflow.coinsflow.ui.view.statisticsScreens.BudgetsScreen
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -280,7 +281,16 @@ fun MainScreen() {
             }
             composable(NavRoutes.Budgets.name) {
                 BudgetsScreen(
-
+                    vm,
+                    navAddBudgetScreen = {
+                        navController.navigate(NavRoutes.AddBudget.name)
+                    }
+                )
+            }
+            composable(NavRoutes.AddBudget.name) {
+                AddBudgetScreen(
+                    vm,
+                    backUp = { navController.popBackStack() }
                 )
             }
         }
@@ -386,7 +396,8 @@ enum class NavRoutes(@StringRes val route: Int) {
     Login(route = R.string.login),
     Markets(route = R.string.markets),
     AddMarket(route = R.string.add_market),
-    Budgets(route = R.string.budgets)
+    Budgets(route = R.string.budgets),
+    AddBudget(route = R.string.add_budget)
 }
 
 @Preview(showBackground = true)

@@ -8,3 +8,8 @@ fun convertMillisToDate(millis: Long): String {
     val formatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
     return formatter.format(Date(millis))
 }
+
+fun convertMillisToDateBudget(millis: Long): String {
+    val formatter = SimpleDateFormat("MM-yyyy", Locale.getDefault())
+    return formatter.format(Date(millis))
+}

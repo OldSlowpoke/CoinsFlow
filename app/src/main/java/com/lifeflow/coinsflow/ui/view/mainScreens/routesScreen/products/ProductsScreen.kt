@@ -58,7 +58,7 @@ fun ProductsScreen(
 @Composable
 fun CategoryItem(
     product: Product,
-    mv: FireViewModel
+    vm: FireViewModel
 ) {
     Column(
         modifier = Modifier
@@ -84,7 +84,7 @@ fun CategoryItem(
             )
             IconButton(
                 onClick = {
-                    mv.deleteProduct(product)
+                    vm.deleteProduct(product)
                 },
                 modifier = Modifier.weight(1f)
             ) {

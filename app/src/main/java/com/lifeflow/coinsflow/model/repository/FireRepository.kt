@@ -7,6 +7,7 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.lifeflow.coinsflow.model.Account
+import com.lifeflow.coinsflow.model.Budget
 import com.lifeflow.coinsflow.model.Check
 import com.lifeflow.coinsflow.model.CheckEntity
 import com.lifeflow.coinsflow.model.ExpenseCategories
@@ -18,7 +19,6 @@ import com.lifeflow.coinsflow.model.UnitType
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -36,6 +36,7 @@ class FireRepository @Inject constructor(
     private var accountsListener: ListenerRegistration? = null
     private var marketsListener: ListenerRegistration? = null
     private var checksListener: ListenerRegistration? = null
+    private var budgetListener: ListenerRegistration? = null
 
     // Метод для остановки всех слушателей
     fun stopAllListeners() {
@@ -46,6 +47,7 @@ class FireRepository @Inject constructor(
         marketsListener?.remove()
         incomesCategoriesListener?.remove()
         checksListener?.remove()
+        budgetListener?.remove()
 
         transactionListener = null
         productListener = null
@@ -54,7 +56,48 @@ class FireRepository @Inject constructor(
         marketsListener = null
         incomesCategoriesListener = null
         checksListener = null
+        budgetListener = null
     }
+
+    //Budget
+    fun getBudgets(): Flow<List<Budget>> = callbackFlow {
+        val snapshotListener = firestore
+            .collection("users")
+            .document(currentUserId())
+            .collection("budget")
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    close(e)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null && !snapshot.isEmpty) {
+                    val budget = snapshot.toObjects(Budget::class.java)
+                    trySend(budget)
+                }
+            }
+        awaitClose { budgetListener?.remove() }
+    }
+
+    suspend fun addBudget(budget: Budget, id: String) {
+        firestore
+            .collection("users")
+            .document(currentUserId())
+            .collection("budget")
+            .document(id)
+            .set(budget)
+            .await()
+    }
+
+    suspend fun deleteBudget(budget: Budget) {
+        firestore
+            .collection("users")
+            .document(currentUserId())
+            .collection("budget")
+            .document(budget.id)
+            .delete()
+            .await()
+    }
+
 
     //Transactions
     fun getTransactions(): Flow<List<Transaction>> = callbackFlow {

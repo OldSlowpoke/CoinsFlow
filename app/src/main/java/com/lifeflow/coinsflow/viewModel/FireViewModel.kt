@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lifeflow.coinsflow.model.Account
+import com.lifeflow.coinsflow.model.Budget
 import com.lifeflow.coinsflow.model.CategoryStat
 import com.lifeflow.coinsflow.model.ExpenseCategories
 import com.lifeflow.coinsflow.model.IncomesCategories
@@ -55,6 +56,7 @@ class FireViewModel @Inject constructor(
         fireRepository.getMarkets().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val checks =
         fireRepository.getChecks().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    val budgets = fireRepository.getBudgets().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState
@@ -78,6 +80,15 @@ class FireViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = 0.0
     )
+
+    //Budgets
+    fun addBudget(budget: Budget, path: String) = viewModelScope.launch {
+        fireRepository.addBudget(budget, path)
+    }
+
+    fun deleteBudget(budget: Budget) = viewModelScope.launch {
+        fireRepository.deleteBudget(budget)
+    }
 
     // Получение транзакций с вложенными чеками
     fun getTransactionsWithChecks(): Flow<List<Transaction>> = flow {
@@ -437,7 +448,7 @@ class FireViewModel @Inject constructor(
             .map { (productName, checks) ->
                 ProductStat(productName, checks.sumOf { it.amount.toDouble() })
             }
-            .sortedByDescending { it.amount }
+            .sortedBy { it.amount }
             .take(20)
     }
 
@@ -482,7 +493,7 @@ class FireViewModel @Inject constructor(
                 }
                 CategoryStat(category, amount)
             }
-            .sortedByDescending { it.amount }
+            .sortedBy { it.amount }
             .take(20)
     }
 
@@ -499,7 +510,7 @@ class FireViewModel @Inject constructor(
                 }
                 CategoryStat(subCategory ?: "Без подкатегории", amount)
             }
-            .sortedByDescending { it.amount }
+            .sortedBy { it.amount }
             .take(20)
     }
 }
