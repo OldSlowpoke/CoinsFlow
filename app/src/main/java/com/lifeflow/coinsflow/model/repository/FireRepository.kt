@@ -630,6 +630,34 @@ class FireRepository @Inject constructor(
             Log.e("FireRepository", "Ошибка обновления баланса счета", e)
         }
     }
+
+    suspend fun getExpensesByBudget(budget: Budget): Double {
+        val userId = currentUserId()
+        val budgetMonthYear = budget.data // Уже в формате "MM-yyyy"
+
+        val query = firestore.collection("users")
+            .document(userId)
+            .collection("transaction")
+            .whereEqualTo("type", "expense")
+            .whereEqualTo("category", budget.category)
+
+        // Добавляем условие для подкатегории, если указана
+        if (budget.subCategory.isNotBlank()) {
+            query.whereEqualTo("subCategory", budget.subCategory)
+        }
+
+        val snapshot = query.get().await()
+        val transactions = snapshot.toObjects(Transaction::class.java)
+
+        // Фильтруем транзакции по месяцу и году
+        val filteredTransactions = transactions.filter { transaction ->
+            val transactionMonthYear = extractMonthYear(transaction.date)
+            transactionMonthYear == budgetMonthYear
+        }
+
+        return filteredTransactions.sumOf { it.total }
+    }
+
 }
 
 
@@ -674,6 +702,15 @@ fun Check.toCheckEntity(): CheckEntity {
             RoundingMode.HALF_UP
         ) // Преобразование Long -> BigDecimal
     )
+}
+
+private fun extractMonthYear(dateString: String): String {
+    // Предполагается формат "dd-MM-yyyy"
+    val parts = dateString.split("-")
+    if (parts.size == 3) {
+        return "${parts[1]}-${parts[2]}" // "MM-yyyy"
+    }
+    throw IllegalArgumentException("Неверный формат даты: $dateString")
 }
 
 

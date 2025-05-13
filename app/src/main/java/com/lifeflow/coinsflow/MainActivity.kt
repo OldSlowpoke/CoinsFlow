@@ -1,5 +1,5 @@
 /*
-CoinsFlow VERSION: 0.0.1
+CoinsFlow VERSION: 1.0.0
 */
 
 package com.lifeflow.coinsflow

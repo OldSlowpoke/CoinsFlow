@@ -36,6 +36,7 @@ import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
+import kotlin.math.absoluteValue
 
 @HiltViewModel
 class FireViewModel @Inject constructor(
@@ -512,6 +513,13 @@ class FireViewModel @Inject constructor(
             }
             .sortedBy { it.amount }
             .take(20)
+    }
+
+    // В FireViewModel.calculateBudgetProgress()
+    fun calculateBudgetProgress(budget: Budget): Flow<Pair<Double, Double>> = flow {
+        val actualExpenses = fireRepository.getExpensesByBudget(budget).absoluteValue
+        val percentage = (actualExpenses / budget.amount) * 100
+        emit(Pair(actualExpenses, percentage))
     }
 }
 

@@ -78,6 +78,8 @@ fun AddBudgetScreen(
             selectedDate = selectedDate,
         )
 
+        HorizontalDivider()
+
         // Поле Категория
         BudgetCategoryBox(
             category = categoryState,
@@ -95,11 +97,15 @@ fun AddBudgetScreen(
                 onSubCategoryChange = { newValue -> subCategory = newValue }
             )
         }
-        Spacer(modifier = Modifier.height(16.dp))
+
+        HorizontalDivider()
+
         BudgetTotalBox(
             total = totalState,
             onTotalChange = { newValue -> totalState = newValue }
         )
+        HorizontalDivider()
+
         Button(
             modifier = Modifier
                 .fillMaxWidth()
