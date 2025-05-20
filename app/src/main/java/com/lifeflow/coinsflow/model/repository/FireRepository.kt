@@ -16,6 +16,10 @@ import com.lifeflow.coinsflow.model.Market
 import com.lifeflow.coinsflow.model.Product
 import com.lifeflow.coinsflow.model.Transaction
 import com.lifeflow.coinsflow.model.UnitType
+import com.lifeflow.coinsflow.model.defaultAccounts
+import com.lifeflow.coinsflow.model.defaultExpenseCategories
+import com.lifeflow.coinsflow.model.defaultIncomeCategories
+import com.lifeflow.coinsflow.model.defaultMarkets
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -656,6 +660,121 @@ class FireRepository @Inject constructor(
         }
 
         return filteredTransactions.sumOf { it.total }
+    }
+
+    private suspend fun checkIfBaseCollectionsExist(userId: String): Boolean {
+        try {
+            // Проверяем наличие документов во всех ключевых коллекциях
+            val accountsSnapshot = firestore.collection("users")
+                .document(userId)
+                .collection("accounts")
+                .get()
+                .await()
+
+            val incomesCategoriesSnapshot = firestore.collection("users")
+                .document(userId)
+                .collection("incomesCategories")
+                .get()
+                .await()
+
+            val expenseCategoriesSnapshot = firestore.collection("users")
+                .document(userId)
+                .collection("expenseCategories")
+                .get()
+                .await()
+
+            val marketsSnapshot = firestore.collection("users")
+                .document(userId)
+                .collection("markets")
+                .get()
+                .await()
+
+            // Если хотя бы одна коллекция не пуста - данные уже инициализированы
+            return accountsSnapshot.isEmpty ||
+                    incomesCategoriesSnapshot.isEmpty ||
+                    expenseCategoriesSnapshot.isEmpty ||
+                    marketsSnapshot.isEmpty
+
+        } catch (e: Exception) {
+            Log.e("FireRepository", "Ошибка проверки коллекций", e)
+            throw e
+        }
+    }
+
+    // FireRepository.kt
+    suspend fun initializeBaseCollections(userId: String) {
+        try {
+
+            if (checkIfBaseCollectionsExist(userId)) {
+                // 1. Добавление счетов
+                for (account in defaultAccounts) {
+                    val accountId =
+                        firestore
+                            .collection("users")
+                            .document(userId)
+                            .collection("accounts")
+                            .document().id
+                    firestore
+                        .collection("users")
+                        .document(userId)
+                        .collection("accounts")
+                        .document(accountId)
+                        .set(account.copy(id = accountId))
+                        .await()
+                }
+
+                // 2. Добавление категорий доходов
+                for (category in defaultIncomeCategories) {
+                    val categoryId =
+                        firestore
+                            .collection("users")
+                            .document(userId)
+                            .collection("incomesCategories")
+                            .document().id
+                    firestore
+                        .collection("users")
+                        .document(userId)
+                        .collection("incomesCategories")
+                        .document(categoryId)
+                        .set(category.copy(id = categoryId))
+                        .await()
+                }
+
+                // 3. Добавление категорий расходов
+                for (category in defaultExpenseCategories) {
+                    val categoryId =
+                        firestore.collection("users")
+                            .document(userId)
+                            .collection("expenseCategories")
+                            .document().id
+                    firestore
+                        .collection("users")
+                        .document(userId)
+                        .collection("expenseCategories")
+                        .document(categoryId)
+                        .set(category.copy(id = categoryId))
+                        .await()
+                }
+
+                // 4. Добавление магазинов
+                for (market in defaultMarkets) {
+                    val marketId = firestore
+                        .collection("users")
+                        .document(userId)
+                        .collection("markets")
+                        .document().id
+                    firestore
+                        .collection("users")
+                        .document(userId).collection("markets")
+                        .document(marketId)
+                        .set(market.copy(id = marketId))
+                        .await()
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("FireRepository", "Ошибка при инициализации данных", e)
+            throw e
+        }
     }
 
 }

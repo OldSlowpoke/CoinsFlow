@@ -256,8 +256,21 @@ class FireViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             val result = fireRepository.register(uiState.value.email, uiState.value.password)
+
             if (result.isSuccess) {
-                _uiState.update { it.copy(isAuthenticated = true) }
+                // 1. Получите пользователя из результата
+                val user = result.getOrNull()
+                if (user != null) {
+                    try {
+                        // 2. Инициализируйте базовые коллекции
+                        fireRepository.initializeBaseCollections(user.uid)
+                        _uiState.update { it.copy(isAuthenticated = true) }
+                    } catch (e: Exception) {
+                        // 3. Обработка ошибок при инициализации данных
+                        _uiState.update { it.copy(error = "Ошибка инициализации данных: ${e.message}") }
+                        Log.e("AuthViewModel", "Ошибка при инициализации данных", e)
+                    }
+                }
             } else {
                 _uiState.update { it.copy(error = result.exceptionOrNull()?.message) }
             }

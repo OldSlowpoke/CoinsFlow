@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import com.lifeflow.coinsflow.R
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.Delete
 
 @Composable
 fun HomeScreen(
@@ -208,11 +209,56 @@ fun TransactionItem(
                     .fillMaxWidth()
                     .clickable { }
                     .padding(15.dp)
+
             ) {
-                Text(
-                    text = transaction.type,
-                    modifier = Modifier.weight(4f),
-                )
+                Column(
+                    modifier = Modifier
+                        .weight(5f)
+                        .fillMaxWidth(),
+                ) {
+                    if (transaction.type == "expense") {
+                        Text(
+                            text = transaction.market,
+                            fontSize = 15.sp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 10.dp), // Занимает всю ширину контейнера
+                        )
+                        Text(
+                            text = transaction.category,
+                            fontSize = 15.sp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 10.dp), // Занимает всю ширину контейнера
+                        )
+                        if (transaction.subCategory != "") {
+                            Text(
+                                text = transaction.subCategory,
+                                fontSize = 15.sp,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 10.dp), // Занимает всю ширину контейнера
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = transaction.category,
+                            fontSize = 15.sp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 10.dp), // Занимает всю ширину контейнера
+                        )
+                        if (transaction.subCategory != "") {
+                            Text(
+                                text = transaction.subCategory,
+                                fontSize = 15.sp,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 10.dp), // Занимает всю ширину контейнера
+                            )
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
                     text = transaction.total.toString(),
@@ -220,16 +266,16 @@ fun TransactionItem(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(
-                    onClick = { value = true },
+                    onClick = { mv.deleteTransactions(transaction) },
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(
-                        ImageVector.vectorResource(R.drawable.baseline_edit_24),
+                        Icons.Filled.Delete,
                         contentDescription = "Edit"
                     )
                 }
             }
-            DropdownMenu(
+            /*DropdownMenu(
                 expanded = value,
                 onDismissRequest = { value = false },
                 offset = DpOffset(x = 270.dp, y = 5.dp)
@@ -247,7 +293,7 @@ fun TransactionItem(
                         value = false
                     }
                 )
-            }
+            }*/
         }
     }
 }

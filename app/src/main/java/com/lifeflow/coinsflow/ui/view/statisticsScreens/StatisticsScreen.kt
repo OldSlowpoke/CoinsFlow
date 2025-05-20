@@ -456,12 +456,21 @@ fun Metrics(stats: List<MonthlyStat>) {
                 fontSize = 18.sp, fontWeight = FontWeight.Bold
             )
             prevMonth?.let {
-                val change = ((lastMonth.balance - it.balance) / it.balance * 100).toInt()
-                Text(
-                    "Изменение: ${if (change > 0) "+" else ""}$change%",
-                    modifier = Modifier.padding(8.dp),
-                    fontSize = 18.sp, fontWeight = FontWeight.Bold
-                )
+                if (prevMonth.balance < 0 && lastMonth.balance < 0) {
+                    val change = -(((lastMonth.balance - it.balance) / it.balance * 100).toInt())
+                    Text(
+                        "Изменение: +$change%",
+                        modifier = Modifier.padding(8.dp),
+                        fontSize = 18.sp, fontWeight = FontWeight.Bold
+                    )
+                }else {
+                    val change = ((lastMonth.balance - it.balance) / it.balance * 100).toInt()
+                    Text(
+                        "Изменение: ${if (change > 0) "+" else ""}$change%",
+                        modifier = Modifier.padding(8.dp),
+                        fontSize = 18.sp, fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
