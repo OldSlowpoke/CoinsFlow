@@ -392,6 +392,7 @@ class FireViewModel @Inject constructor(
         transactions: List<Transaction>,
         timeRange: String = "Month"
     ): Map<String, MonthlyStat> {
+
         val currentYear = LocalDate.now().year
         val grouped = transactions.groupBy { transaction ->
             try {
@@ -422,7 +423,7 @@ class FireViewModel @Inject constructor(
 
         // Сортировка по возрастанию (в зависимости от timeRange)
         val sortedKeys = when (timeRange) {
-            "Month" -> validGrouped.keys.sortedWith(compareBy {
+            "Months" -> validGrouped.keys.sortedWith(compareBy {
                 LocalDate.parse("$it-01", DateTimeFormatter.ofPattern("yyyy-MM-dd"))
             })
 

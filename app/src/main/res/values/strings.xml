@@ -21,4 +21,10 @@
     <string name="login">Login</string>
     <string name="budgets">Budgets</string>
     <string name="add_budget">AddBudgets</string>
+
+    //Описание статистики
+    <string name="stat_balance">Для Months:\nПоказывает доходы и расходы за каждый месяц текущего года.\nДля Years:\nСводка по годам. Сортируется в хронологическом порядке."\nДля "All:\nОбщая сумма доходов и расходов за всё время.</string>
+    <string name="stat_top_products">Показывает 20 товаров с наибольшей суммой покупок за выбранный период.\nСортируется по возрастанию суммы.</string>
+    <string name="stat_top_categories">Показывает 20 категорий с наибольшей суммой операций.</string>
+    <string name="stat_price_change_product">Показывает 20 категорий с наибольшей суммой операций.</string>
 </resources>

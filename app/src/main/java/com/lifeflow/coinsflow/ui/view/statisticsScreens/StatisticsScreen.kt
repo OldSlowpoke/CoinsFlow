@@ -1,14 +1,17 @@
 package com.lifeflow.coinsflow.ui.view.statisticsScreens
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -21,6 +24,7 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -30,9 +34,11 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
@@ -90,7 +96,10 @@ fun StatisticsScreen(vm: FireViewModel, navToBudgets: () -> Unit) {
         },
         {
             // Card 2: Баланс по месяцам
-            StatsCard(title = "Баланс по месяцам") { selectProduct, filter ->
+            StatsCard(
+                title = "Баланс по месяцам",
+                description = stringResource(R.string.stat_balance)
+            ) { selectProduct, filter ->
                 IncomeExpenseBarChart(
                     statsMap = vm.calculateMonthlyStats(transactions, filter),
                 )
@@ -98,7 +107,10 @@ fun StatisticsScreen(vm: FireViewModel, navToBudgets: () -> Unit) {
         },
         {
             // Card 3: Топ товаров
-            StatsCard(title = "Топ 20 товаров") { selectProduct, filter ->
+            StatsCard(
+                title = "Топ 20 товаров",
+                description = stringResource(R.string.stat_top_products)
+            ) { selectProduct, filter ->
                 TopProductChart(
                     sortedStats = vm.getTopProducts(checks, filter),
                 )
@@ -106,7 +118,10 @@ fun StatisticsScreen(vm: FireViewModel, navToBudgets: () -> Unit) {
         },
         {
             // Card 4: Топ категорий
-            StatsCard(title = "Топ 20 категорий") { selectProduct, filter ->
+            StatsCard(
+                title = "Топ 20 категорий",
+                description = stringResource(R.string.stat_top_categories)
+            ) { selectProduct, filter ->
                 TopCategoryChart(
                     sortedStats = vm.getTopCategoriesFromTransactions(transactions, filter),
                 )
@@ -117,7 +132,8 @@ fun StatisticsScreen(vm: FireViewModel, navToBudgets: () -> Unit) {
             StatsCard(
                 products = productsList,
                 product = true,
-                title = "Изменение цен"
+                title = "Изменение цен",
+                description = stringResource(R.string.stat_price_change_product)
             ) { selectProduct, filter ->
                 ChangePriceProductChart(
                     priceHistory = vm.getPriceChange(
@@ -147,6 +163,7 @@ fun StatsCard(
     products: List<Product> = emptyList(),
     title: String,
     product: Boolean = false,
+    description: String = "",
     content: @Composable (String, String) -> Unit
 ) {
 
@@ -159,7 +176,46 @@ fun StatsCard(
             .padding(vertical = 8.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+
+            var showDialog by remember { mutableStateOf(false) }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween, // Выравнивание по краям
+                verticalAlignment = Alignment.CenterVertically // Выравнивание по вертикали
+            ) {
+                Text(
+                    title,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(5f).padding(end = 8.dp),
+                )
+                IconButton(
+                    onClick = { showDialog = !showDialog },
+                    modifier = Modifier.weight(0.5f)
+                ) {
+                    Icon(
+                        imageVector = ImageVector
+                            .vectorResource(R.drawable.baseline_info_24),
+                        contentDescription = ""
+                    )
+                }
+                // Диалоговое окно
+                if (showDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        title = { Text("Пояснение") },
+                        text = { Text(description)},
+                        confirmButton = {
+                            TextButton(onClick = { showDialog = false }) {
+                                Text("OK")
+                            }
+                        },
+                        modifier = Modifier.padding(24.dp)
+                    )
+                }
+            }
+
             var selectedIndex by remember { mutableIntStateOf(-1) }
             val options = listOf("All", "Years", "Months")
             SingleChoiceSegmentedButtonRow {
@@ -275,6 +331,11 @@ fun TestScreen(
 fun IncomeExpenseBarChart(
     statsMap: Map<String, MonthlyStat>
 ) {
+    if (statsMap.isEmpty()) {
+        Text("Данные отсутствуют.")
+        return
+    }
+
     val stats = statsMap.values.sortedBy { it.month }
 
     val groupBars = stats.map { stat ->
@@ -463,7 +524,7 @@ fun Metrics(stats: List<MonthlyStat>) {
                         modifier = Modifier.padding(8.dp),
                         fontSize = 18.sp, fontWeight = FontWeight.Bold
                     )
-                }else {
+                } else {
                     val change = ((lastMonth.balance - it.balance) / it.balance * 100).toInt()
                     Text(
                         "Изменение: ${if (change > 0) "+" else ""}$change%",
@@ -721,6 +782,11 @@ fun ProductField(
 @Composable
 fun TopProductChart(sortedStats: List<ProductStat>) {
 
+    if (sortedStats.isEmpty()) {
+        Text("Данные отсутствуют.")
+        return
+    }
+
     val bars = sortedStats.mapIndexed { index, stat ->
         BarData(
             point = Point(
@@ -773,6 +839,11 @@ fun TopProductChart(sortedStats: List<ProductStat>) {
 
 @Composable
 fun TopCategoryChart(sortedStats: List<CategoryStat>) {
+
+    if (sortedStats.isEmpty()) {
+        Text("Данные отсутствуют.")
+        return
+    }
 
     val bars = sortedStats.mapIndexed { index, stat ->
         BarData(
