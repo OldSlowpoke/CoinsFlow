@@ -824,10 +824,9 @@ fun Check.toCheckEntity(): CheckEntity {
 }
 
 private fun extractMonthYear(dateString: String): String {
-    // Предполагается формат "dd-MM-yyyy"
     val parts = dateString.split("-")
     if (parts.size == 3) {
-        return "${parts[1]}-${parts[2]}" // "MM-yyyy"
+        return "${parts[0]}-${parts[1]}"
     }
     throw IllegalArgumentException("Неверный формат даты: $dateString")
 }

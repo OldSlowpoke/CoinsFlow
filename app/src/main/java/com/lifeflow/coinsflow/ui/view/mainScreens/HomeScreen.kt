@@ -47,6 +47,9 @@ import com.lifeflow.coinsflow.R
 import com.lifeflow.coinsflow.viewModel.FireViewModel
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.filled.Delete
+import com.lifeflow.coinsflow.ui.view.formatDateYyyyMmDdToDdMmYyyy
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeScreen(
@@ -169,12 +172,18 @@ fun Transactions(
     expens: List<Transaction>,
     mv: FireViewModel,
 ) {
-    val groups = expens.groupBy { it.date }
+    // Сортируем транзакции по дате в обратном порядке (убывающая)
+    val sortedTransactions = expens.sortedByDescending {
+        LocalDate.parse(it.date, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+    }
+
+    val groups = sortedTransactions.groupBy { it.date }
+
     LazyColumn {
-        groups.forEach { (date, incomes) ->
+        groups.forEach { (date, transactions) ->
             stickyHeader {
                 Text(
-                    text = date,
+                    text = date.formatDateYyyyMmDdToDdMmYyyy(),
                     color = Color.White,
                     modifier = Modifier
                         .padding(top = 10.dp, start = 5.dp, end = 5.dp, bottom = 3.dp)
@@ -183,7 +192,7 @@ fun Transactions(
                     textAlign = TextAlign.Center
                 )
             }
-            items(incomes) { transaction ->
+            items(transactions) { transaction ->
                 TransactionItem(transaction = transaction, mv)
             }
         }
@@ -195,7 +204,7 @@ fun TransactionItem(
     transaction: Transaction,
     mv: FireViewModel,
 ) {
-    var value by rememberSaveable { mutableStateOf(false) }
+    //var value by rememberSaveable { mutableStateOf(false) }
     Box(
         modifier = Modifier
             .fillMaxWidth()

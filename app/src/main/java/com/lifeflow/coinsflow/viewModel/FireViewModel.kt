@@ -392,27 +392,22 @@ class FireViewModel @Inject constructor(
         transactions: List<Transaction>,
         timeRange: String = "Month"
     ): Map<String, MonthlyStat> {
-        val currentYear = LocalDate.now().year // Получаем текущий год
-
+        val currentYear = LocalDate.now().year
         val grouped = transactions.groupBy { transaction ->
             try {
-                val date: LocalDate = try {
-                    val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-                    LocalDate.parse(transaction.date, formatter)
-                } catch (e: Exception) {
-                    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-                    LocalDate.parse(transaction.date, formatter)
-                }
+                // Изменили формат на yyyy-MM-dd
+                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                val date = LocalDate.parse(transaction.date, formatter)
 
                 when (timeRange) {
                     "Months" -> {
                         if (date.year != currentYear) {
-                            "invalid" // Исключаем месяцы не текущего года
+                            "invalid"
                         } else {
+                            // Теперь ключ уже в формате "yyyy-MM" (год-месяц)
                             "${date.year}-${String.format("%02d", date.monthValue)}"
                         }
                     }
-
                     "Years" -> "${date.year}"
                     "All" -> "total"
                     else -> "invalid"
@@ -485,7 +480,7 @@ class FireViewModel @Inject constructor(
 
     // Проверка даты
     private fun isWithinTimeRange(date: String, timeRange: String): Boolean {
-        val parsedDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+        val parsedDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
         val now = LocalDate.now()
         return when (timeRange) {
             "Year" -> parsedDate.year == now.year
